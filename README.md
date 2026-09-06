@@ -1,0 +1,53 @@
+# فالهايم (Valheim)
+
+حزمة فالهايم على منصة سيرفرك (`serverk.gg`). هذا المستودع فيه كل شيء اللعبة تحتاجه عشان تشتغل على المنصة: ملف التعريف `serverk.yml`، الـ driver اللي يدير السيرفر، صورة الدوكر، والشروحات.
+
+The Valheim game package for the Serverk platform (`serverk.gg`). This repo holds everything the game needs to run on the platform: the `serverk.yml` manifest, the driver that manages the server, the Docker image, and the guides.
+
+## Layout
+
+- `serverk.yml` — the game manifest: metadata, resources, ports, backup rules, guides.
+- `src/` — the bridge driver: install (SteamCMD app 896660), lifecycle, query, the settings the start command is built from, worlds, the Steam ID lists, and the BepInEx mod catalog.
+- `image/Dockerfile` — the runtime image; the compiled bridge binary is its entrypoint.
+- `assets/` — logo and banner (webp).
+- `guides/` — player guides in Arabic and English.
+
+## What Valheim does not give a server
+
+The dedicated server has no console and no RCON, so the package deliberately ships none of the features that would need one:
+
+- No `announce` module — nothing can put a message in front of players.
+- No terminal commands — the console tab shows the log and takes no input.
+- No kick — a ban is written to `bannedlist.txt` and applies on the next join attempt.
+- No manual save — `-saveinterval` and shutdown are the only save points.
+
+Every setting reaches the server as a start parameter, so the driver owns `.serverk-settings.json` and builds the argv from it. Every settings change needs a restart.
+
+## Develop
+
+Everything runs on [Bun](https://bun.sh):
+
+```sh
+bun install
+bun run check
+bun run tsc
+bun run test
+bun run validate
+bun run compile
+```
+
+`validate` checks the manifest, assets, and driver wiring with the exact validation the platform runs at publish. `compile` produces `dist/bridge`, an amd64 binary — serverk publishes game images for `linux/amd64` only.
+
+The `.githooks/pre-commit` hook is the gate: it runs `fix`, `tsc`, `test`, `validate`, and `serverk-bridge schema --check` on every commit. `bun install` wires it up through the `prepare` script.
+
+The driver is built on [`@serverkgg/bridge`](https://www.npmjs.com/package/@serverkgg/bridge). `postinstall` runs `serverk-bridge link`, which points `node_modules/@serverkgg/bridge` at a local checkout when one sits beside this repo — never commit a `file:` dependency.
+
+## Contribute
+
+- افتح issue لأي مشكلة أو اقتراح — بالعربي أو بالإنجليزي، كلها مرحّب فيها.
+- Run `bun run check`, `bun run tsc`, `bun run test` and `bun run validate` before you open a pull request — the same checks the pre-commit hook runs.
+- Releases are done by the Serverk team through the platform's central release pipeline; merged changes ride the next release.
+
+## Arabic copy
+
+Arabic is the source language of the platform. Player-facing strings in `serverk.yml` and the guides use Gulf gaming Arabic — the game's Arabic name is always «فالهايم», written solid.

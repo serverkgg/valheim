@@ -1,0 +1,232 @@
+# yaml-language-server: $schema=./serverk.schema.json
+schemaVersion: serverk.gg/v1
+kind: GamePackage
+
+metadata:
+  id: valheim
+  name:
+    ar: فالهايم
+    en: Valheim
+  description:
+    ar: سيرفر فالهايم — عالم فايكنق مفتوح تبدأ فيه بفأس خشب وتنتهي بقاعدة على البحر. اقطع، ابنِ، اصطاد، وواجهوا البوسات مع بعض. العالم والمودات وقواعد اللعب كلها بيدك من اللوحة، واللعب المشترك يخلي أصحابك على Xbox يدخلون معك بكود.
+    en: Valheim dedicated servers — an open Viking world you enter with a wooden axe and leave with a hall on the coast. Chop, build, hunt, and take the bosses down together. The world, the mods and the rules are yours from the panel, and crossplay lets your Xbox friends join with a code.
+  tagline:
+    ar: ابنِ قاعدتك، اصرع البوسات مع أصحابك — سيرفرك جاهز خلال دقيقة
+    en: Build your hall, fell the bosses with your friends — your server, ready in a minute
+  category: survival
+  logo: assets/logo.webp
+  banner: assets/banner.webp
+
+resources:
+  minMemoryMb: 2048
+  recommendedMemoryMb: 4096
+  minDiskMb: 6144
+  playersPerMemoryGb: 4
+  maxRecommendedPlayers: 10
+
+container:
+  image: serverkgg/valheim
+  runtime:
+    platform: linux
+    installBudgetMinutes: 15
+    bootBudgetMinutes: 8
+    shmMb: 64
+    pidsLimit: 512
+  ports:
+    - key: game
+      containerPort: 2456
+      protocol: udp
+      mirror: true
+      name:
+        ar: فالهايم
+        en: Valheim
+      hint:
+        ar: من القائمة الرئيسية اختر Join Game، بعدها تبويب Servers وزر Add server، والصق العنوان زي ما هو.
+        en: From the main menu pick Join Game, open the Servers tab, press Add server, and paste the address exactly as shown.
+      hostRange:
+        default: 9700
+        min: 9700
+        max: 9799
+    - key: query
+      containerPort: 2457
+      protocol: udp
+      mirror: true
+      follows:
+        key: game
+        offset: 1
+      name:
+        ar: الاستعلام
+        en: Query
+      hint:
+        ar: منفذ الاستعلام — منه يظهر سيرفرك في قائمة سيرفرات فالهايم. اللاعب ما يكتبه أبداً.
+        en: The query port — it is how your server shows up in the Valheim server browser. Players never type it.
+      hostRange:
+        default: 9701
+        min: 9701
+        max: 9800
+
+backup:
+  only:
+    - save/**
+    - .serverk-settings.json
+  except:
+    - save/**/*.db.new
+    - save/**/*.fwl.new
+
+reset:
+  keep:
+    - .steamcmd
+    - .steam
+    - steamapps
+    - valheim_server.x86_64
+    - valheim_server_Data
+    - linux64
+    - UnityPlayer.so
+    - "*.so"
+    - "*.debug"
+    - start_server.sh
+    - steam_appid.txt
+
+presence:
+  name: player
+  id: steamId
+  avatar: "https://avatars.steamstatic.com/{avatarHash}_full.jpg"
+  fields:
+    - key: steamId
+      label:
+        ar: رقم Steam
+        en: Steam ID
+
+files:
+  protected:
+    - .steamcmd
+    - .steam
+    - steamapps
+    - valheim_server.x86_64
+    - valheim_server_Data
+    - linux64
+    - .serverk-install.json
+    - .serverk-mods.json
+    - .serverk-bepinex.json
+  notable:
+    - match: .serverk-settings.json
+      label:
+        ar: إعدادات السيرفر
+        en: Server settings
+      icon: settings
+      color: "#c9873f"
+      restart: true
+      note:
+        ar: إعدادات سيرفرك كلها — الاسم، كلمة المرور، العالم، وقواعد اللعب. فالهايم ما عنده ملف إعدادات خاص فيه، كل شي يروح له كأوامر تشغيل، فهذا الملف هو مصدرها. عدّله من تبويب الإعدادات أفضل، وأي تعديل يبي إعادة تشغيل.
+        en: Every setting your server runs on — name, password, world and the world rules. Valheim has no config file of its own; everything reaches it as start parameters, and this file is where they come from. The settings tab is the easier way, and any change needs a restart.
+    - match: save/worlds_local
+      label:
+        ar: عوالمك
+        en: Your worlds
+      icon: map
+      color: "#5ba32b"
+      note:
+        ar: كل عالم ملفين — ‎.db فيه كل شي مبني، و‎.fwl فيه بذرة العالم وقواعده. لا تحذف واحد وتخلي الثاني، وخذ نسخة احتياطية قبل أي شي تسويه هنا.
+        en: Each world is two files — the .db holds everything built, the .fwl holds the seed and the world rules. Never delete one and keep the other, and take a backup before you touch anything here.
+    - match: save/adminlist.txt
+      label:
+        ar: الأدمن
+        en: Admins
+      icon: shield
+      color: "#4a8fd4"
+      restart: true
+      note:
+        ar: أرقام Steam حقت الأدمن، رقم في كل سطر. اللي هنا يفتح له كونسول الأدمن داخل اللعبة بزر F5. تبويب الصلاحيات أسهل من تعديله بيدك.
+        en: The Steam IDs of your admins, one per line. Anyone here unlocks the in-game admin console on F5. The access tab is easier than editing it by hand.
+    - match: save/bannedlist.txt
+      label:
+        ar: المحظورين
+        en: Bans
+      icon: sword
+      color: "#c77dff"
+      restart: true
+      note:
+        ar: أرقام Steam الممنوعة من الدخول. فالهايم يقرأ الملف عند التشغيل، فأي إضافة تبي إعادة تشغيل عشان تطرد اللي داخل الحين.
+        en: The Steam IDs that cannot join. Valheim reads this at start, so a new entry needs a restart to drop somebody who is already on.
+    - match: save/permittedlist.txt
+      label:
+        ar: القائمة البيضاء
+        en: Allow list
+      icon: users
+      color: "#4ac2a0"
+      restart: true
+      note:
+        ar: إذا كتبت رقم واحد هنا، ما يدخل سيرفرك إلا أرقام هذي القائمة. خلّه فاضي إذا تبي الكل يدخل بكلمة المرور.
+        en: Put a single ID here and nobody outside this list can join. Leave it empty to let anyone with the password in.
+    - match: BepInEx/plugins
+      label:
+        ar: المودات
+        en: Mods
+      icon: puzzle
+      color: "#d05353"
+      restart: true
+      note:
+        ar: كل مود في مجلد باسمه. نزّل مودات من تبويب المودات أفضل — من هناك ننزّل كل اللي يعتمد عليه المود معه.
+        en: Each mod sits in its own folder. Installing from the mods tab is better — it pulls everything the mod depends on with it.
+
+guideTags:
+  - id: start
+    name:
+      ar: ابدأ من هنا
+      en: Start here
+  - id: worlds
+    name:
+      ar: العوالم
+      en: Worlds
+  - id: mods
+    name:
+      ar: المودات
+      en: Mods
+
+guides:
+  - id: getting-started
+    title:
+      ar: البدء بسيرفرك
+      en: Getting started
+    summary:
+      ar: أنشئ سيرفر فالهايم، اضبط كلمة المرور، وادخله مع أصحابك — بالعنوان أو بكود اللعب المشترك.
+      en: Create your Valheim server, set the password, and get in with your friends — by address or by crossplay code.
+    tags:
+      - start
+    surfaces:
+      - overview
+      - setup
+    bodyPath:
+      ar: guides/getting-started/ar.md
+      en: guides/getting-started/en.md
+  - id: worlds
+    title:
+      ar: العوالم — رفع وتبديل وبناء جديد
+      en: Worlds — upload, switch and start fresh
+    summary:
+      ar: ارفع عالمك من جهازك، بدّل بين عوالمك، أو ابنِ عالم جديد بدون ما تخسر القديم.
+      en: Upload the world from your own game, switch between worlds, or start a fresh one without losing the old.
+    tags:
+      - worlds
+    surfaces:
+      - panel
+      - files
+      - backups
+    bodyPath:
+      ar: guides/worlds/ar.md
+      en: guides/worlds/en.md
+  - id: mods
+    title:
+      ar: المودات و BepInEx
+      en: Mods and BepInEx
+    summary:
+      ar: ركّب BepInEx بضغطة، نزّل مودات ثندرستور على سيرفرك، وخلّ أصحابك يركّبون نفسها.
+      en: Install BepInEx with one press, put Thunderstore mods on your server, and get your friends onto the same list.
+    tags:
+      - mods
+    surfaces:
+      - panel
+      - files
+    bodyPath:
+      ar: guides/mods/ar.md
+      en: guides/mods/en.md
