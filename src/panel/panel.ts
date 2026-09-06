@@ -83,9 +83,9 @@ const COMBAT_OPTIONS = [
 const DEATH_PENALTY_OPTIONS = [
 	DEFAULT_CHOICE,
 	choice("casual", "ما تخسر شي", "Casual"),
-	choice("veryeasy", "خفيفة مرة", "Very easy"),
-	choice("easy", "خفيفة", "Easy"),
-	choice("hard", "قاسية", "Hard"),
+	choice("veryeasy", "سهل مرة", "Very easy"),
+	choice("easy", "سهل", "Easy"),
+	choice("hard", "صعب", "Hard"),
 	choice("hardcore", "هاردكور", "Hardcore"),
 ];
 
