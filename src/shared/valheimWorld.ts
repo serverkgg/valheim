@@ -13,7 +13,8 @@ export const WORLD_EXTENSIONS = [
 export interface ValheimWorld {
 	name: string;
 	sizeBytes: number;
-	complete: boolean;
+	hasData: boolean;
+	hasMeta: boolean;
 }
 
 export const worldPath = (name: string, extension: string) => {
@@ -58,13 +59,18 @@ export const discoverWorlds = async (context: Bridge.Context): Promise<ValheimWo
 		const world = found.get(name) ?? {
 			name,
 			sizeBytes: 0,
-			complete: false,
+			hasData: false,
+			hasMeta: false,
 		};
 
 		world.sizeBytes += entry.sizeBytes;
 
 		if (extension === WORLD_META_EXTENSION) {
-			world.complete = true;
+			world.hasMeta = true;
+		}
+
+		if (extension === WORLD_DB_EXTENSION) {
+			world.hasData = true;
 		}
 
 		found.set(name, world);
@@ -99,4 +105,12 @@ export const removeWorld = async (context: Bridge.Context, name: string) => {
 			await context.files.remove(path);
 		}
 	}
+};
+
+export const missingHalf = (world: ValheimWorld) => {
+	if (!world.hasMeta) {
+		return WORLD_META_EXTENSION;
+	}
+
+	return world.hasData ? null : WORLD_DB_EXTENSION;
 };

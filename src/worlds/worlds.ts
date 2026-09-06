@@ -6,6 +6,7 @@ import {
 	isUnder,
 	isValidWorldName,
 	mergeSettings,
+	missingHalf,
 	readSettings,
 	relativeUploadPath,
 	removeWorld,
@@ -43,12 +44,14 @@ export const worlds: Bridge.Collection = {
 		const active = await activeWorld(context);
 
 		return (await discoverWorlds(context)).map((world) => {
+			const missing = missingHalf(world);
+
 			return {
 				id: world.name,
 				name: world.name,
 				size: formatByteSize(world.sizeBytes),
 				active: world.name === active ? ACTIVE_MARK : "",
-				state: world.complete ? "" : `ينقصه .${WORLD_META_EXTENSION} / missing .${WORLD_META_EXTENSION}`,
+				state: missing === null ? "" : `ينقصه ملف .${missing} / missing its .${missing}`,
 			};
 		});
 	},
