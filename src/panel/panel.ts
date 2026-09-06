@@ -41,6 +41,7 @@ import {
 	SAVE_INTERVAL_FIELD,
 	SAVE_INTERVAL_MAX,
 	SAVE_INTERVAL_MIN,
+	UNSET,
 	WORLD_EXTENSIONS,
 	WORLD_FIELD,
 	WORLD_LENGTH,
@@ -58,7 +59,7 @@ const choice = (value: string, ar: string, en: string) => {
 	};
 };
 
-const DEFAULT_CHOICE = choice("", "زي ما هو", "Leave as it is");
+const DEFAULT_CHOICE = choice(UNSET, "زي ما هو", "Leave as it is");
 
 const PRESET_OPTIONS = [
 	DEFAULT_CHOICE,

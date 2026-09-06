@@ -2,19 +2,19 @@ import { type Bridge, BridgeKind, BridgeTerminalLevel } from "@serverkgg/bridge"
 
 const rules: Bridge.TerminalRule[] = [
 	{
-		match: /\b\w*Exception\b|Unhandled Exception:/,
+		match: /Unhandled Exception:|Fatal error in GC|DllNotFoundException|Segmentation fault/,
 		level: BridgeTerminalLevel.Error,
 	},
 	{
-		match: /^\s*\[Error\s*:|(?:^|\s)(?:ERROR|Error):/,
+		match: /^\s*\[Error\s*:/,
 		level: BridgeTerminalLevel.Error,
 	},
 	{
-		match: /^\s*\[Warning\s*:|(?:^|\s)(?:WARNING|Warning):/,
+		match: /^\s*\[Warning\s*:|Failed to place all|is not supported on this platform/,
 		level: BridgeTerminalLevel.Warn,
 	},
 	{
-		match: /Got connection SteamID|Closing socket|Got character ZDOID|World saved/,
+		match: /Got connection SteamID|Closing socket|Got character ZDOID|World saved|Game server connected|with join code/,
 		level: BridgeTerminalLevel.Info,
 	},
 ];

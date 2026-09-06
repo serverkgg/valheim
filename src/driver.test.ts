@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { BridgeFormTarget, BridgeLayout, BridgeSetupStepKind, BridgeUploadMode } from "@serverkgg/bridge";
 import { GuideOpenTab } from "@serverkgg/bridge/guides";
 import { isBridgeEventName } from "@serverkgg/bridge/protocol";
+import { bridgePanelSchema, bridgeSetupManifestSchema, bridgeTerminalManifestSchema } from "@serverkgg/bridge/wire";
 import { driver } from "./driver";
 import { PACK_ID } from "./mods";
 import {
@@ -122,6 +123,43 @@ describe("assembling the valheim driver", () => {
 		},
 		VALIDATE_TIMEOUT_MS,
 	);
+
+	test("builds a panel the agent's own wire schema accepts, which validate does not check", () => {
+		const parsed = bridgePanelSchema.safeParse(driver.panel);
+
+		expect(
+			parsed.success ? null : parsed.error.issues,
+			"the agent drops a manifest its wire schema rejects",
+		).toBeNull();
+	});
+
+	test("builds a terminal manifest the wire schema accepts", () => {
+		const parsed = bridgeTerminalManifestSchema.safeParse({
+			commands: driver.terminal?.commands ?? [],
+			rules: (driver.terminal?.rules ?? []).map((rule) => {
+				return {
+					match: rule.match.source,
+					flags: rule.match.flags,
+					level: rule.level,
+					...(rule.stream === undefined
+						? {}
+						: {
+								stream: rule.stream,
+							}),
+				};
+			}),
+		});
+
+		expect(parsed.success ? null : parsed.error.issues, "the terminal manifest crosses the same wire").toBeNull();
+	});
+
+	test("builds a setup manifest the wire schema accepts", () => {
+		const parsed = bridgeSetupManifestSchema.safeParse({
+			steps: driver.setup?.steps ?? [],
+		});
+
+		expect(parsed.success ? null : parsed.error.issues, "the setup manifest crosses the same wire").toBeNull();
+	});
 
 	test("declares every capability the panel and the platform depend on", () => {
 		expect(driver.install).toBeDefined();

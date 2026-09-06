@@ -75,6 +75,8 @@ export const DEFAULT_WORLD = "Serverk";
 
 export const DEFAULT_NAME = "Serverk Valheim";
 
+export const UNSET = "default";
+
 export const PRESETS = [
 	"normal",
 	"casual",
@@ -163,12 +165,12 @@ export const SETTING_DEFAULTS: Bridge.Values = {
 	[BACKUPS_FIELD]: 4,
 	[BACKUP_SHORT_FIELD]: 7200,
 	[BACKUP_LONG_FIELD]: 43_200,
-	[PRESET_FIELD]: "",
-	[COMBAT_FIELD]: "",
-	[DEATH_PENALTY_FIELD]: "",
-	[RESOURCES_FIELD]: "",
-	[RAIDS_FIELD]: "",
-	[PORTALS_FIELD]: "",
+	[PRESET_FIELD]: UNSET,
+	[COMBAT_FIELD]: UNSET,
+	[DEATH_PENALTY_FIELD]: UNSET,
+	[RESOURCES_FIELD]: UNSET,
+	[RAIDS_FIELD]: UNSET,
+	[PORTALS_FIELD]: UNSET,
 	[NO_BUILD_COST_FIELD]: false,
 	[PLAYER_EVENTS_FIELD]: false,
 	[PASSIVE_MOBS_FIELD]: false,
@@ -219,7 +221,11 @@ export const choiceOf = (value: Bridge.Value, allowed: readonly string[]) => {
 		return "";
 	}
 
-	const text = String(value).trim().toLowerCase();
+	const text = String(value).trim();
+
+	if (text === UNSET) {
+		return "";
+	}
 
 	return allowed.includes(text) ? text : "";
 };

@@ -18,10 +18,10 @@ metadata:
   banner: assets/banner.webp
 
 resources:
-  minMemoryMb: 2048
-  recommendedMemoryMb: 4096
-  minDiskMb: 6144
-  playersPerMemoryGb: 4
+  minMemoryMb: 4096
+  recommendedMemoryMb: 8192
+  minDiskMb: 8192
+  playersPerMemoryGb: 3
   maxRecommendedPlayers: 10
 
 container:
@@ -77,15 +77,20 @@ reset:
   keep:
     - .steamcmd
     - .steam
+    - .config
+    - Steam
     - steamapps
+    - docker
+    - linux64
     - valheim_server.x86_64
     - valheim_server_Data
-    - linux64
-    - UnityPlayer.so
-    - "*.so"
+    - "*.so*"
     - "*.debug"
     - start_server.sh
+    - start_server_xterm.sh
+    - docker_start_server.sh
     - steam_appid.txt
+    - Valheim Dedicated Server Manual.pdf
 
 presence:
   name: player
@@ -101,10 +106,13 @@ files:
   protected:
     - .steamcmd
     - .steam
+    - Steam
     - steamapps
     - valheim_server.x86_64
     - valheim_server_Data
     - linux64
+    - UnityPlayer.so
+    - steamclient.so
     - .serverk-install.json
     - .serverk-mods.json
     - .serverk-bepinex.json

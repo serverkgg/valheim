@@ -11,7 +11,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
       tini ca-certificates curl util-linux procps tzdata locales \
-      lib32gcc-s1 lib32stdc++6 libatomic1 libpulse0; \
+      lib32gcc-s1 lib32stdc++6 libatomic1 libpulse0 libpulse-mainloop-glib0; \
     rm -rf /var/lib/apt/lists/*; \
     locale-gen en_US.UTF-8; \
     if getent passwd 1000 > /dev/null; then \
