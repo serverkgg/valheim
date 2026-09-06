@@ -31,7 +31,7 @@ describe("naming valheim world files", () => {
 	});
 });
 
-describe("telling a player which half of a world pair is missing", () => {
+describe("telling a player when the half that matters is missing", () => {
 	test("says nothing while both halves are there", () => {
 		expect(
 			missingHalf({
@@ -54,7 +54,7 @@ describe("telling a player which half of a world pair is missing", () => {
 		).toBe("fwl");
 	});
 
-	test("names the db when only the seed was uploaded", () => {
+	test("says nothing about a world that has not written its first save yet, which every new world looks like", () => {
 		expect(
 			missingHalf({
 				name: "Serverk",
@@ -62,6 +62,6 @@ describe("telling a player which half of a world pair is missing", () => {
 				hasData: false,
 				hasMeta: true,
 			}),
-		).toBe("db");
+		).toBeNull();
 	});
 });

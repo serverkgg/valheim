@@ -108,9 +108,5 @@ export const removeWorld = async (context: Bridge.Context, name: string) => {
 };
 
 export const missingHalf = (world: ValheimWorld) => {
-	if (!world.hasMeta) {
-		return WORLD_META_EXTENSION;
-	}
-
-	return world.hasData ? null : WORLD_DB_EXTENSION;
+	return world.hasMeta ? null : WORLD_META_EXTENSION;
 };
