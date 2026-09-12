@@ -8,11 +8,11 @@ metadata:
     ar: فالهايم
     en: Valheim
   description:
-    ar: سيرفر فالهايم — عالم فايكنق مفتوح تبدأ فيه بفأس خشب وتنتهي بقاعدة على البحر. اقطع، ابنِ، اصطاد، وواجهوا البوسات مع بعض. العالم والمودات وقواعد اللعب كلها بيدك من اللوحة، واللعب المشترك يخلي أصحابك على Xbox يدخلون معك بكود.
-    en: Valheim dedicated servers — an open Viking world you enter with a wooden axe and leave with a hall on the coast. Chop, build, hunt, and take the bosses down together. The world, the mods and the rules are yours from the panel, and crossplay lets your Xbox friends join with a code.
+    ar: سيرفر فالهايم — عالم فايكنق مفتوح تبدأ فيه بفأس خشب وتنتهي بقاعدة على البحر. اقطع، ابنِ، اصطاد، وواجهوا البوسات مع بعض. العالم والمودات وقواعد اللعب كلها بيدك من اللوحة، واللعب المشترك يخلي أصحابك على Xbox و PS5 و Switch 2 يدخلون معك بكود.
+    en: Valheim dedicated servers — an open Viking world you enter with a wooden axe and leave with a hall on the coast. Chop, build, hunt, and take the bosses down together. The world, the mods and the rules are yours from the panel, and crossplay lets friends on Xbox, PS5 and Switch 2 join with a code.
   tagline:
-    ar: ابنِ قاعدتك، اصرع البوسات مع أصحابك — سيرفرك جاهز خلال دقيقة
-    en: Build your hall, fell the bosses with your friends — your server, ready in a minute
+    ar: ابنِ قاعدتك واصرع البوسات مع أصحابك على PC و Xbox و PS5 و Switch 2 — عالمك بإدارتك
+    en: Build your hall and fell the bosses with friends on PC, Xbox, PS5 and Switch 2 — your world, your rules
   category: survival
   logo: assets/logo.webp
   banner: assets/banner.webp
@@ -69,9 +69,27 @@ backup:
   only:
     - save/**
     - .serverk-settings.json
+    - BepInEx/**
+    - doorstop_libs/**
+    - doorstop_config.ini
+    - .doorstop_version
+    - winhttp.dll
+    - start_game_bepinex.sh
+    - start_server_bepinex.sh
+    - .serverk-bepinex.json
+    - .serverk-mods.json
   except:
     - save/**/*.db.new
     - save/**/*.fwl.new
+    - BepInEx/LogOutput.log
+    - BepInEx/cache/**
+
+secrets:
+  - key: STEAM_WEB_API_KEY
+    description:
+      ar: مفتاح Steam Web API للمنصة — منه نجيب أسماء حسابات Steam وصورهم في جدول اللاعبين والأدمن والمحظورين.
+      en: The platform's Steam Web API key — it reads Steam account names and avatars for the players, admins and bans tables.
+    required: false
 
 reset:
   keep:
@@ -94,13 +112,17 @@ reset:
 
 presence:
   name: player
-  id: steamId
+  id: platformId
   avatar: "https://avatars.steamstatic.com/{avatarHash}_full.jpg"
   fields:
-    - key: steamId
+    - key: account
       label:
-        ar: رقم Steam
-        en: Steam ID
+        ar: الحساب
+        en: Account
+    - key: platform
+      label:
+        ar: المنصة
+        en: Platform
 
 files:
   protected:
@@ -144,8 +166,8 @@ files:
       color: "#4a8fd4"
       restart: true
       note:
-        ar: أرقام Steam حقت الأدمن، رقم في كل سطر. اللي هنا يفتح له كونسول الأدمن داخل اللعبة بزر F5. تبويب الصلاحيات أسهل من تعديله بيدك.
-        en: The Steam IDs of your admins, one per line. Anyone here unlocks the in-game admin console on F5. The access tab is easier than editing it by hand.
+        ar: معرّفات الأدمن (Platform User ID)، معرّف في كل سطر. للي على Steam يكون V_ ومعه رقم Steam64 — رقم Steam لحاله ما عاد يفتح الأدمن من نسخة 1.0. اللي هنا يفتح له كونسول الأدمن داخل اللعبة بزر F5، وصفحة اللاعبين أسهل من تعديله بيدك.
+        en: The Platform User IDs of your admins, one per line. On Steam that is V_ followed by the Steam64 id — a bare Steam number stopped granting admin in 1.0. Anyone here unlocks the in-game admin console on F5, and the Players page is easier than editing it by hand.
     - match: save/bannedlist.txt
       label:
         ar: المحظورين
@@ -154,8 +176,8 @@ files:
       color: "#c77dff"
       restart: true
       note:
-        ar: أرقام Steam الممنوعة من الدخول. فالهايم يقرأ الملف عند التشغيل، فأي إضافة تبي إعادة تشغيل عشان تطرد اللي داخل الحين.
-        en: The Steam IDs that cannot join. Valheim reads this at start, so a new entry needs a restart to drop somebody who is already on.
+        ar: المعرّفات الممنوعة من الدخول، بنفس صيغة Platform User ID. فالهايم يقرأ الملف عند التشغيل، فأي إضافة تبي إعادة تشغيل عشان تطرد اللي داخل الحين.
+        en: The Platform User IDs that cannot join. Valheim reads this at start, so a new entry needs a restart to drop somebody who is already on.
     - match: save/permittedlist.txt
       label:
         ar: القائمة البيضاء
@@ -164,8 +186,8 @@ files:
       color: "#4ac2a0"
       restart: true
       note:
-        ar: إذا كتبت رقم واحد هنا، ما يدخل سيرفرك إلا أرقام هذي القائمة. خلّه فاضي إذا تبي الكل يدخل بكلمة المرور.
-        en: Put a single ID here and nobody outside this list can join. Leave it empty to let anyone with the password in.
+        ar: إذا كتبت معرّف واحد هنا، ما يدخل سيرفرك إلا معرّفات هذي القائمة. خلّه فاضي إذا تبي الكل يدخل بكلمة المرور.
+        en: Put a single Platform User ID here and nobody outside this list can join. Leave it empty to let anyone with the password in.
     - match: BepInEx/plugins
       label:
         ar: المودات

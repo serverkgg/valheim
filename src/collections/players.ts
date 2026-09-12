@@ -1,7 +1,8 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { presenceOf, roster, watchRoster } from "../shared";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
+import { displayNameOf, platformOf, presenceOf, roster, watchRoster } from "../shared";
 import { BANNED_OPTIONS } from "./lists";
-import { addSteamId } from "./steamIdCollection";
+import { addPlatformId } from "./platformIdCollection";
 
 const REFRESH_SECONDS = 15;
 
@@ -16,27 +17,34 @@ export const players: Bridge.Collection = {
 		return roster.all().map((player) => {
 			return {
 				id: player.id,
-				name: player.player ?? "",
-				steamId: player.id,
+				name: displayNameOf(player),
+				account: player.account ?? "",
+				platform: player.platform,
+				platformId: player.id,
 			};
 		});
 	},
 
 	actions: {
 		async ban(context, row) {
-			await addSteamId(context, BANNED_OPTIONS, row.id);
+			const id = await addPlatformId(context, BANNED_OPTIONS, row.id);
+			const known = roster.all().find((player) => player.id === id) ?? null;
 
 			context.emit(
-				"PlayerBanned",
-				presenceOf({
-					id: row.id,
-					player: typeof row.name === "string" && row.name.length > 0 ? row.name : null,
-					avatarHash: null,
-				}),
+				BridgeEventName.PlayerBanned,
+				presenceOf(
+					known ?? {
+						account: typeof row.account === "string" && row.account.length > 0 ? row.account : null,
+						avatarHash: null,
+						character: typeof row.name === "string" && row.name.length > 0 ? row.name : null,
+						id,
+						platform: platformOf(id),
+					},
+				),
 			);
 
 			context.log("banned a player", {
-				steamId: row.id,
+				platformId: id,
 			});
 		},
 	},

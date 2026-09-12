@@ -334,6 +334,13 @@ export const guardSettings = (values: Bridge.Values) => {
 		});
 	}
 
+	if (passwordInName(settings.world, settings.password)) {
+		throw new BridgeUserError({
+			ar: "كلمة المرور ما تنفع تكون داخل اسم العالم — فالهايم يرفض يشتغل كذا. غيّر وحدة منهم.",
+			en: "The password cannot appear inside the world name — Valheim refuses to start. Change one of them.",
+		});
+	}
+
 	if (!isValidWorldName(settings.world)) {
 		throw new BridgeUserError(WORLD_NAME_MESSAGE);
 	}

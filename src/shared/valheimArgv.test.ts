@@ -20,6 +20,7 @@ const settings = (over: Record<string, unknown> = {}) => {
 const command = (over: Record<string, unknown> = {}) => {
 	return startCommand({
 		gamePort: 9700,
+		instanceId: "abc123",
 		savedir: "/home/container/save",
 		settings: settings(over),
 	});
@@ -77,6 +78,28 @@ describe("building the valheim start command", () => {
 				crossplay: true,
 			}),
 		).toContain("-crossplay");
+	});
+
+	test("names the instance after the server code, so two crossplay servers behind one ip stay apart", () => {
+		expect(valueAfter(command(), "-instanceid")).toBe("abc123");
+	});
+
+	test("passes no instance id at all when the platform gave none", () => {
+		expect(
+			startCommand({
+				gamePort: 9700,
+				instanceId: "  ",
+				savedir: "/home/container/save",
+				settings: settings(),
+			}),
+		).not.toContain("-instanceid");
+	});
+
+	test("keeps the instance id before the save and backup numbers valheim reads after it", () => {
+		const argv = command();
+
+		expect(argv.indexOf("-instanceid")).toBeGreaterThan(argv.indexOf("-savedir"));
+		expect(argv.indexOf("-instanceid")).toBeLessThan(argv.indexOf("-saveinterval"));
 	});
 
 	test("passes every save and backup number through", () => {

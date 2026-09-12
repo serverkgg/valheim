@@ -5,6 +5,7 @@ import {
 	BridgeFormTarget,
 	BridgeIcon,
 	BridgeLayout,
+	BridgePlace,
 	BridgeUploadMode,
 } from "@serverkgg/bridge";
 import { WORLD_NAME_ARGUMENT } from "../actions";
@@ -41,6 +42,7 @@ import {
 	SAVE_INTERVAL_FIELD,
 	SAVE_INTERVAL_MAX,
 	SAVE_INTERVAL_MIN,
+	STEAM_PLATFORM_PREFIX,
 	UNSET,
 	WORLD_EXTENSIONS,
 	WORLD_FIELD,
@@ -128,6 +130,10 @@ const settingsTab: Bridge.Tab = {
 			title: {
 				ar: "سيرفرك",
 				en: "Your server",
+			},
+			help: {
+				ar: "اسم سيرفرك وكلمة مروره وعالمه، وكيف يوصلون له أصحابك.",
+				en: "Your server's name, password and world, and how your friends reach it.",
 			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
@@ -218,6 +224,10 @@ const settingsTab: Bridge.Tab = {
 			title: {
 				ar: "قواعد العالم",
 				en: "World rules",
+			},
+			help: {
+				ar: "صعوبة اللعب وكل قاعدة فيه. النمط يضبطها كلها دفعة وحدة.",
+				en: "How hard the world plays, rule by rule. A preset sets them all in one move.",
 			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
@@ -358,6 +368,10 @@ const settingsTab: Bridge.Tab = {
 				ar: "الحفظ والنسخ",
 				en: "Saving and backups",
 			},
+			help: {
+				ar: "كل كم يحفظ فالهايم لحاله، وكم نسخة يحتفظ فيها جوّا مجلد العالم.",
+				en: "How often Valheim autosaves, and how many copies it keeps inside the world folder.",
+			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
 			restartHint: true,
@@ -430,6 +444,10 @@ const settingsTab: Bridge.Tab = {
 				ar: "نسخة اللعبة",
 				en: "Game build",
 			},
+			help: {
+				ar: "الفرع اللي ننزّل منه فالهايم من Steam. تغييره يعيد التنزيل.",
+				en: "The Steam branch we pull Valheim from. Changing it redownloads the game.",
+			},
 			target: BridgeFormTarget.Variables,
 			reinstall: true,
 			confirm: BridgeConfirm.Strong,
@@ -472,6 +490,10 @@ const worldsTab: Bridge.Tab = {
 			title: {
 				ar: "عوالمك",
 				en: "Your worlds",
+			},
+			help: {
+				ar: "أوقف سيرفرك قبل رفع عالم أو حذفه. ارفع كل عالم باسم مختلف؛ ما نستبدل ملفات موجودة. تفعيل عالم ينطبق بعد إعادة التشغيل.",
+				en: "Stop your server before uploading or deleting worlds. Use a distinct name for each world; existing files cannot be replaced. Activating a world applies after a restart.",
 			},
 			module: "worlds",
 			restartHint: true,
@@ -605,18 +627,27 @@ const playersTab: Bridge.Tab = {
 	sections: [
 		{
 			layout: BridgeLayout.Detail,
-			id: "join-code",
-			module: "session",
-			empty: {
-				ar: "كود الدخول يطلع هنا لما تفعّل اللعب المشترك من الإعدادات.",
-				en: "The join code appears here once you turn crossplay on in the settings.",
+			id: "metrics",
+			title: {
+				ar: "حالة السيرفر",
+				en: "Server health",
 			},
+			help: {
+				ar: "النسخة، العالم، اللاعبين، آخر حفظ، وكود الدخول لو اللعب المشترك مفتوح.",
+				en: "Version, world, players, last save, and the join code while crossplay is on.",
+			},
+			place: BridgePlace.Overview,
+			module: "metrics",
 			related: {
 				tab: "settings",
 				label: {
 					ar: "إعدادات الدخول",
 					en: "Join settings",
 				},
+			},
+			empty: {
+				ar: "ما قدرنا نقرأ حالة سيرفرك.",
+				en: "We could not read your server's state.",
 			},
 		},
 		{
@@ -626,6 +657,11 @@ const playersTab: Bridge.Tab = {
 				ar: "داخلين الحين",
 				en: "Online now",
 			},
+			help: {
+				ar: "اللي داخلين سيرفرك الحين. الاسم يطلع من اللوق، فياخذ لحظة بعد ما يدخل اللاعب.",
+				en: "Everyone on your server right now. The name comes from the log, so it lands a moment after they join.",
+			},
+			place: BridgePlace.Players,
 			module: "players",
 			columns: [
 				{
@@ -636,10 +672,24 @@ const playersTab: Bridge.Tab = {
 					},
 				},
 				{
-					key: "steamId",
+					key: "account",
 					label: {
-						ar: "رقم Steam",
-						en: "Steam ID",
+						ar: "الحساب",
+						en: "Account",
+					},
+				},
+				{
+					key: "platform",
+					label: {
+						ar: "المنصة",
+						en: "Platform",
+					},
+				},
+				{
+					key: "platformId",
+					label: {
+						ar: "المعرّف",
+						en: "Platform ID",
 					},
 				},
 			],
@@ -650,10 +700,11 @@ const playersTab: Bridge.Tab = {
 						ar: "حظر",
 						en: "Ban",
 					},
+					offline: true,
 					confirm: BridgeConfirm.Strong,
 					confirmText: {
-						ar: "بنضيف رقمه لقائمة المحظورين. فالهايم ما فيه أمر طرد، فالحظر يمنعه أول ما يحاول يدخل مرة ثانية — وإذا كان داخل الحين، أعد تشغيل سيرفرك عشان يطلع.",
-						en: "We add their Steam ID to the ban list. Valheim has no kick command, so the ban stops them the next time they try to join — restart your server to drop them if they are on right now.",
+						ar: "بنضيف معرّفه لقائمة المحظورين. فالهايم ما فيه أمر طرد، فالحظر يمنعه أول ما يحاول يدخل مرة ثانية — وإذا كان داخل الحين، أعد تشغيل سيرفرك عشان يطلع.",
+						en: "We add their platform id to the ban list. Valheim has no kick command, so the ban stops them the next time they try to join — restart your server to drop them if they are on right now.",
 					},
 				},
 			],
@@ -662,17 +713,6 @@ const playersTab: Bridge.Tab = {
 				en: "Nobody is online right now.",
 			},
 		},
-	],
-};
-
-const accessTab: Bridge.Tab = {
-	id: "access",
-	title: {
-		ar: "الصلاحيات",
-		en: "Access",
-	},
-	icon: BridgeIcon.Shield,
-	sections: [
 		{
 			layout: BridgeLayout.Table,
 			id: "admins",
@@ -680,21 +720,33 @@ const accessTab: Bridge.Tab = {
 				ar: "الأدمن",
 				en: "Admins",
 			},
+			help: {
+				ar: `اللي هنا يفتح له كونسول الأدمن داخل اللعبة بزر F5. اكتب معرّف اللاعب، ولو كتبت رقم Steam لحاله نحطه لك بالبادئة ${STEAM_PLATFORM_PREFIX}. التغيير يبي إعادة تشغيل.`,
+				en: `Anyone here unlocks the in-game admin console on F5. Write the player's platform id — a bare Steam number gets the ${STEAM_PLATFORM_PREFIX} prefix added for you. A change needs a restart.`,
+			},
+			place: BridgePlace.Players,
 			module: "admins",
 			restartHint: true,
 			columns: [
 				{
-					key: "steamId",
+					key: "account",
 					label: {
-						ar: "رقم Steam",
-						en: "Steam ID",
+						ar: "الحساب",
+						en: "Account",
 					},
 				},
 				{
-					key: "player",
+					key: "platform",
 					label: {
-						ar: "الاسم",
-						en: "Name",
+						ar: "المنصة",
+						en: "Platform",
+					},
+				},
+				{
+					key: "platformId",
+					label: {
+						ar: "المعرّف",
+						en: "Platform ID",
 					},
 				},
 			],
@@ -703,7 +755,7 @@ const accessTab: Bridge.Tab = {
 					ar: "أضف أدمن",
 					en: "Add an admin",
 				},
-				placeholder: "76561198000000000",
+				placeholder: `${STEAM_PLATFORM_PREFIX}76561198000000000`,
 			},
 			actions: [
 				{
@@ -716,8 +768,8 @@ const accessTab: Bridge.Tab = {
 				},
 			],
 			empty: {
-				ar: "ما فيه أدمن. أضف رقم Steam حقك عشان تفتح أوامر الأدمن داخل اللعبة بزر F5.",
-				en: "No admins yet. Add your own Steam ID to unlock the in-game admin commands on F5.",
+				ar: "ما فيه أدمن. أضف معرّفك عشان تفتح أوامر الأدمن داخل اللعبة بزر F5.",
+				en: "No admins yet. Add your own platform id to unlock the in-game admin commands on F5.",
 			},
 		},
 		{
@@ -727,30 +779,42 @@ const accessTab: Bridge.Tab = {
 				ar: "المحظورين",
 				en: "Bans",
 			},
+			help: {
+				ar: `المعرّفات الممنوعة من الدخول. فالهايم يقرأ الملف عند التشغيل، فأي إضافة تبي إعادة تشغيل عشان تطرد اللي داخل الحين. رقم Steam لحاله ناخذه ونحطه بالبادئة ${STEAM_PLATFORM_PREFIX}.`,
+				en: `The platform ids that cannot join. Valheim reads the file at start, so a new entry needs a restart to drop somebody already on. A bare Steam number gets the ${STEAM_PLATFORM_PREFIX} prefix added for you.`,
+			},
+			place: BridgePlace.Players,
 			module: "bans",
 			restartHint: true,
 			columns: [
 				{
-					key: "steamId",
+					key: "account",
 					label: {
-						ar: "رقم Steam",
-						en: "Steam ID",
+						ar: "الحساب",
+						en: "Account",
 					},
 				},
 				{
-					key: "player",
+					key: "platform",
 					label: {
-						ar: "الاسم",
-						en: "Name",
+						ar: "المنصة",
+						en: "Platform",
+					},
+				},
+				{
+					key: "platformId",
+					label: {
+						ar: "المعرّف",
+						en: "Platform ID",
 					},
 				},
 			],
 			add: {
 				label: {
-					ar: "احظر رقم",
+					ar: "احظر معرّف",
 					en: "Ban an ID",
 				},
-				placeholder: "76561198000000000",
+				placeholder: `${STEAM_PLATFORM_PREFIX}76561198000000000`,
 			},
 			actions: [
 				{
@@ -774,21 +838,33 @@ const accessTab: Bridge.Tab = {
 				ar: "القائمة البيضاء",
 				en: "Allow list",
 			},
+			help: {
+				ar: `إذا كتبت معرّف واحد هنا، ما يدخل سيرفرك إلا اللي في هذي القائمة. خلّها فاضية إذا تبي الكل يدخل بكلمة المرور.`,
+				en: `Put a single platform id here and nobody outside this list can join. Leave it empty to let anyone with the password in.`,
+			},
+			place: BridgePlace.Players,
 			module: "permitted",
 			restartHint: true,
 			columns: [
 				{
-					key: "steamId",
+					key: "account",
 					label: {
-						ar: "رقم Steam",
-						en: "Steam ID",
+						ar: "الحساب",
+						en: "Account",
 					},
 				},
 				{
-					key: "player",
+					key: "platform",
 					label: {
-						ar: "الاسم",
-						en: "Name",
+						ar: "المنصة",
+						en: "Platform",
+					},
+				},
+				{
+					key: "platformId",
+					label: {
+						ar: "المعرّف",
+						en: "Platform ID",
 					},
 				},
 			],
@@ -797,7 +873,7 @@ const accessTab: Bridge.Tab = {
 					ar: "أضف لاعب",
 					en: "Add a player",
 				},
-				placeholder: "76561198000000000",
+				placeholder: `${STEAM_PLATFORM_PREFIX}76561198000000000`,
 			},
 			actions: [
 				{
@@ -810,8 +886,8 @@ const accessTab: Bridge.Tab = {
 				},
 			],
 			empty: {
-				ar: "القائمة فاضية، يعني الكل يقدر يدخل بكلمة المرور. أول رقم تضيفه هنا يقفل السيرفر على المضافين بس.",
-				en: "The list is empty, so anyone with the password can join. The first ID you add locks the server to the list.",
+				ar: "القائمة فاضية، يعني الكل يقدر يدخل بكلمة المرور. أول معرّف تضيفه هنا يقفل السيرفر على المضافين بس.",
+				en: "The list is empty, so anyone with the password can join. The first id you add locks the server to the list.",
 			},
 		},
 	],
@@ -876,6 +952,10 @@ const modsTab: Bridge.Tab = {
 				ar: "تشغيل المودات",
 				en: "Mod loading",
 			},
+			help: {
+				ar: "يقرّر إذا يشتغل سيرفرك مع BepInEx ولا فالهايم أصلي.",
+				en: "Decides whether your server starts with BepInEx or as plain Valheim.",
+			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
 			restartHint: true,
@@ -905,6 +985,10 @@ const modsTab: Bridge.Tab = {
 				ar: "مودات ثندرستور",
 				en: "Thunderstore mods",
 			},
+			help: {
+				ar: "دوّر على أي مود من ثندرستور وركّبه، وننزّل معه كل اللي يعتمد عليه.",
+				en: "Search Thunderstore for any mod and install it — we pull everything it depends on with it.",
+			},
 			module: "mods",
 			restartHint: true,
 			empty: {
@@ -920,7 +1004,6 @@ export const panel: Bridge.Panel = {
 		settingsTab,
 		worldsTab,
 		playersTab,
-		accessTab,
 		modsTab,
 	],
 };

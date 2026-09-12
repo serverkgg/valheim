@@ -5,10 +5,12 @@ import {
 	CROSSPLAY_FIELD,
 	enrichRoster,
 	MAX_PLAYERS,
+	metrics,
 	presenceOf,
 	readSettings,
 	roster,
 	type ValheimPlayer,
+	watchMetrics,
 	watchRoster,
 } from "../shared";
 
@@ -25,16 +27,19 @@ export const query: Bridge.Query = {
 
 	async sample(context) {
 		watchRoster(context);
+		watchMetrics(context);
 
 		await enrichRoster(context);
 
-		sync.sync(context, roster.named());
+		sync.sync(context, roster.all());
 
 		const crossplay = booleanOf((await readSettings(context))[CROSSPLAY_FIELD] ?? null, false);
 
 		if (!crossplay) {
 			try {
 				const info = await context.probe.a2s(context.port("query"));
+
+				metrics.recordPlayers(info.players.online);
 
 				return {
 					online: info.players.online,
@@ -45,8 +50,12 @@ export const query: Bridge.Query = {
 			}
 		}
 
+		const online = Math.max(roster.all().length, roster.count() ?? 0);
+
+		metrics.recordPlayers(online);
+
 		return {
-			online: roster.named().length,
+			online,
 			max: MAX_PLAYERS,
 		};
 	},

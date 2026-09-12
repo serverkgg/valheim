@@ -11,10 +11,10 @@
 		"check": "bunx biome check",
 		"fix": "bunx biome check --write --unsafe",
 		"tsc": "tsc",
-		"test": "bun test --parallel"
+		"test": "bun test"
 	},
 	"dependencies": {
-		"@serverkgg/bridge": "0.0.12"
+		"@serverkgg/bridge": "0.0.16"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.7",

@@ -44,3 +44,9 @@ Valheim breaks mods on every major patch. What usually happens:
 If your server stops coming up after an update: turn **Mod loading** off to get it running again immediately, then update your mods one at a time from the catalog.
 
 @[open](console)
+
+## Back up a modded world
+
+Backups include your worlds, server settings, installed BepInEx version, enabled and disabled mods, and mod configuration. Restore one to recover that same combination.
+
+Stop the server before taking a backup you plan to restore. Stopping saves the world and keeps the files from changing while the backup runs. A backup taken while the server runs contains the last saved progress and may overlap an autosave.

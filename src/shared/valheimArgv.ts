@@ -12,6 +12,7 @@ export const GAME_LIBRARY_PATH = "./linux64";
 export interface ValheimStart {
 	gamePort: number;
 	savedir: string;
+	instanceId: string;
 	settings: ValheimSettings;
 }
 
@@ -80,6 +81,12 @@ export const startCommand = (start: ValheimStart): string[] => {
 			: []),
 		"-savedir",
 		start.savedir,
+		...(start.instanceId.trim().length === 0
+			? []
+			: [
+					"-instanceid",
+					start.instanceId.trim(),
+				]),
 		"-saveinterval",
 		String(settings.saveInterval),
 		"-backups",

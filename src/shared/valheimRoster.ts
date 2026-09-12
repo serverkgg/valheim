@@ -1,20 +1,31 @@
 import type { Bridge } from "@serverkgg/bridge";
-import { playerSummaries, steamWebApiReady } from "@serverkgg/bridge/steam";
+import { createSteamAvatars, playerSummaries, steamWebApiReady } from "@serverkgg/bridge/steam";
 import {
 	CHARACTER_LINE,
 	CLOSING_LINE,
 	CONNECTION_LINE,
+	CROSSPLAY_JOIN_LINE,
+	CROSSPLAY_LEAVE_LINE,
+	HANDSHAKE_LINE,
 	isSpawn,
 	JOIN_CODE_LINE,
 	parseCharacter,
 	parseClosing,
 	parseConnection,
+	parseCrossplayJoin,
+	parseCrossplayLeave,
+	parseHandshake,
 	parseJoinCode,
+	parseWrongPassword,
+	WRONG_PASSWORD_LINE,
 } from "./valheimLog";
+import { platformOf, steam64Of, type ValheimPlatform } from "./valheimPlatformId";
 
 export interface ValheimPlayer {
 	id: string;
-	player: string | null;
+	platform: ValheimPlatform;
+	account: string | null;
+	character: string | null;
 	avatarHash: string | null;
 }
 
@@ -24,61 +35,81 @@ export interface ValheimSession {
 	session: string;
 }
 
-const STEAM_AVATAR = /\/([0-9a-f]{40})(?:_[a-z]+)?\.jpg/;
-
-export const avatarHashOf = (url: string) => {
-	return url.match(STEAM_AVATAR)?.at(1) ?? null;
-};
-
 export interface ValheimRoster {
-	connect(steamId: string): void;
-	name(player: string): void;
-	disconnect(steamId: string): void;
+	connect(id: string): void;
+	handshake(id: string): void;
+	name(character: string): void;
+	disconnect(id: string): void;
 	clear(): void;
-	named(): ValheimPlayer[];
 	all(): ValheimPlayer[];
 	describe(hashes: Map<string, string>): void;
+	identify(accounts: Map<string, string>): void;
 	session(): ValheimSession | null;
 	observe(session: ValheimSession): void;
+	count(): number | null;
+	observeCount(players: number | null): void;
 	read(line: string): void;
 }
+
+export const displayNameOf = (player: ValheimPlayer) => {
+	return player.character ?? player.account ?? player.id;
+};
 
 export const createRoster = (): ValheimRoster => {
 	const players = new Map<string, ValheimPlayer>();
 	const awaiting: string[] = [];
 
 	let latest: ValheimSession | null = null;
+	let crossplayCount: number | null = null;
+
+	const remember = (id: string) => {
+		const known = players.get(id);
+
+		if (known) {
+			return known;
+		}
+
+		const entry: ValheimPlayer = {
+			account: null,
+			avatarHash: null,
+			character: null,
+			id,
+			platform: platformOf(id),
+		};
+
+		players.set(id, entry);
+
+		return entry;
+	};
 
 	const roster: ValheimRoster = {
-		connect(steamId) {
-			if (players.has(steamId)) {
-				return;
-			}
-
-			players.set(steamId, {
-				id: steamId,
-				player: null,
-				avatarHash: null,
-			});
-
-			awaiting.push(steamId);
+		connect(id) {
+			remember(id);
 		},
 
-		name(player) {
-			const steamId = awaiting.shift();
-			const entry = steamId === undefined ? undefined : players.get(steamId);
+		handshake(id) {
+			remember(id);
+
+			if (!awaiting.includes(id)) {
+				awaiting.push(id);
+			}
+		},
+
+		name(character) {
+			const id = awaiting.shift();
+			const entry = id === undefined ? undefined : players.get(id);
 
 			if (!entry) {
 				return;
 			}
 
-			entry.player = player;
+			entry.character = character;
 		},
 
-		disconnect(steamId) {
-			players.delete(steamId);
+		disconnect(id) {
+			players.delete(id);
 
-			const index = awaiting.indexOf(steamId);
+			const index = awaiting.indexOf(id);
 
 			if (index >= 0) {
 				awaiting.splice(index, 1);
@@ -89,12 +120,7 @@ export const createRoster = (): ValheimRoster => {
 			players.clear();
 			awaiting.length = 0;
 			latest = null;
-		},
-
-		named() {
-			return [
-				...players.values(),
-			].filter((entry) => entry.player !== null);
+			crossplayCount = null;
 		},
 
 		all() {
@@ -113,6 +139,16 @@ export const createRoster = (): ValheimRoster => {
 			}
 		},
 
+		identify(accounts) {
+			for (const entry of players.values()) {
+				const account = accounts.get(entry.id);
+
+				if (account !== undefined) {
+					entry.account = account;
+				}
+			}
+		},
+
 		session() {
 			return latest;
 		},
@@ -121,11 +157,35 @@ export const createRoster = (): ValheimRoster => {
 			latest = session;
 		},
 
+		count() {
+			return crossplayCount;
+		},
+
+		observeCount(count) {
+			crossplayCount = count;
+		},
+
 		read(line) {
+			const handshake = parseHandshake(line);
+
+			if (handshake) {
+				roster.handshake(handshake.id);
+
+				return;
+			}
+
 			const connection = parseConnection(line);
 
 			if (connection) {
-				roster.connect(connection.steamId);
+				roster.connect(connection.id);
+
+				return;
+			}
+
+			const rejected = parseWrongPassword(line);
+
+			if (rejected) {
+				roster.disconnect(rejected.id);
 
 				return;
 			}
@@ -133,7 +193,7 @@ export const createRoster = (): ValheimRoster => {
 			const closing = parseClosing(line);
 
 			if (closing) {
-				roster.disconnect(closing.steamId);
+				roster.disconnect(closing.id);
 
 				return;
 			}
@@ -142,6 +202,20 @@ export const createRoster = (): ValheimRoster => {
 
 			if (character && isSpawn(character)) {
 				roster.name(character.player);
+
+				return;
+			}
+
+			const joined = parseCrossplayJoin(line);
+
+			if (joined) {
+				roster.observeCount(joined.players);
+
+				return;
+			}
+
+			if (parseCrossplayLeave(line)) {
+				roster.observeCount(crossplayCount === null ? null : Math.max(0, crossplayCount - 1));
 
 				return;
 			}
@@ -159,10 +233,20 @@ export const createRoster = (): ValheimRoster => {
 
 export const roster = createRoster();
 
+export const avatars = createSteamAvatars({
+	steamIdOf: steam64Of,
+});
+
 export const presenceOf = (player: ValheimPlayer): Bridge.Values => {
 	return {
-		player: player.player ?? player.id,
-		steamId: player.id,
+		player: displayNameOf(player),
+		platformId: player.id,
+		platform: player.platform,
+		...(player.account === null
+			? {}
+			: {
+					account: player.account,
+				}),
 		...(player.avatarHash === null
 			? {}
 			: {
@@ -171,30 +255,47 @@ export const presenceOf = (player: ValheimPlayer): Bridge.Values => {
 	};
 };
 
-export const enrichRoster = async (context: Bridge.Context) => {
-	const missing = roster
-		.all()
-		.filter((entry) => entry.avatarHash === null)
-		.map((entry) => entry.id);
+const identifyRoster = async (context: Bridge.Context) => {
+	const missing = roster.all().flatMap((entry) => {
+		const steam64 = entry.account === null ? steam64Of(entry.id) : null;
+
+		return steam64 === null
+			? []
+			: [
+					[
+						entry.id,
+						steam64,
+					] as const,
+				];
+	});
 
 	if (missing.length === 0 || !steamWebApiReady(context)) {
 		return;
 	}
 
 	try {
-		const summaries = await playerSummaries(context, missing);
+		const summaries = await playerSummaries(
+			context,
+			missing.map(([, steam64]) => steam64),
+		);
+		const personas = new Map(
+			summaries.map((summary) => [
+				summary.steamid,
+				summary.personaname,
+			]),
+		);
 
-		roster.describe(
+		roster.identify(
 			new Map(
-				summaries.flatMap((summary) => {
-					const hash = avatarHashOf(summary.avatarfull);
+				missing.flatMap(([id, steam64]) => {
+					const persona = personas.get(steam64);
 
-					return hash === null
+					return persona === undefined
 						? []
 						: [
 								[
-									summary.steamid,
-									hash,
+									id,
+									persona,
 								] as const,
 							];
 				}),
@@ -207,6 +308,18 @@ export const enrichRoster = async (context: Bridge.Context) => {
 	}
 };
 
+export const enrichRoster = async (context: Bridge.Context) => {
+	const ids = roster.all().map((entry) => entry.id);
+
+	if (ids.length === 0) {
+		return;
+	}
+
+	roster.describe(await avatars.resolve(context, ids));
+
+	await identifyRoster(context);
+};
+
 let following = false;
 
 export const watchRoster = (context: Bridge.Context) => {
@@ -216,19 +329,35 @@ export const watchRoster = (context: Bridge.Context) => {
 
 	following = true;
 
-	context.logs.follow(CONNECTION_LINE, (match) => {
-		const steamId = match.groups?.steamId;
+	context.logs.follow(HANDSHAKE_LINE, (match) => {
+		const id = match.groups?.id;
 
-		if (steamId !== undefined) {
-			roster.connect(steamId);
+		if (id !== undefined) {
+			roster.handshake(id);
+		}
+	});
+
+	context.logs.follow(CONNECTION_LINE, (match) => {
+		const id = match.groups?.id;
+
+		if (id !== undefined) {
+			roster.connect(id);
+		}
+	});
+
+	context.logs.follow(WRONG_PASSWORD_LINE, (match) => {
+		const id = match.groups?.id;
+
+		if (id !== undefined) {
+			roster.disconnect(id);
 		}
 	});
 
 	context.logs.follow(CLOSING_LINE, (match) => {
-		const steamId = match.groups?.steamId;
+		const id = match.groups?.id;
 
-		if (steamId !== undefined) {
-			roster.disconnect(steamId);
+		if (id !== undefined) {
+			roster.disconnect(id);
 		}
 	});
 
@@ -238,6 +367,20 @@ export const watchRoster = (context: Bridge.Context) => {
 		if (character && isSpawn(character)) {
 			roster.name(character.player);
 		}
+	});
+
+	context.logs.follow(CROSSPLAY_JOIN_LINE, (match) => {
+		const joined = parseCrossplayJoin(match.at(0) ?? "");
+
+		if (joined) {
+			roster.observeCount(joined.players);
+		}
+	});
+
+	context.logs.follow(CROSSPLAY_LEAVE_LINE, () => {
+		const current = roster.count();
+
+		roster.observeCount(current === null ? null : Math.max(0, current - 1));
 	});
 
 	context.logs.follow(JOIN_CODE_LINE, (match) => {

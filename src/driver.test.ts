@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { BridgeFormTarget, BridgeLayout, BridgeSetupStepKind, BridgeUploadMode } from "@serverkgg/bridge";
+import { BridgeFormTarget, BridgeLayout, BridgePlace, BridgeSetupStepKind, BridgeUploadMode } from "@serverkgg/bridge";
 import { GuideOpenTab } from "@serverkgg/bridge/guides";
 import { isBridgeEventName } from "@serverkgg/bridge/protocol";
 import { bridgePanelSchema, bridgeSetupManifestSchema, bridgeTerminalManifestSchema } from "@serverkgg/bridge/wire";
@@ -63,6 +63,14 @@ interface Manifest {
 			key: string;
 		}[];
 	};
+	secrets?: {
+		key: string;
+		required: boolean;
+		description: {
+			ar: string;
+			en: string;
+		};
+	}[];
 }
 
 const VALIDATE_TIMEOUT_MS = 120_000;
@@ -175,9 +183,36 @@ describe("assembling the valheim driver", () => {
 		expect(driver.announce).toBeUndefined();
 	});
 
-	test("declares a terminal with no commands, because the dedicated server has no console", () => {
-		expect(driver.terminal?.commands).toEqual([]);
+	test("answers its console commands in the driver, because valheim reads nothing from stdin", () => {
+		expect(driver.terminal?.run).toBeDefined();
+		expect((driver.terminal?.commands ?? []).length).toBeGreaterThan(0);
 		expect(driver.terminal?.rules?.length).toBeGreaterThan(0);
+	});
+
+	test("offers a safe command the game smoke can run with no argument and no danger", () => {
+		const safe = (driver.terminal?.commands ?? []).find((command) => {
+			return command.danger !== true && (command.args ?? []).length === 0;
+		});
+
+		expect(safe?.name).toBe("status");
+	});
+
+	test("names an argument after the module and column the panel can fill it from", () => {
+		const ban = (driver.terminal?.commands ?? []).find((command) => command.name === "ban");
+		const target = (ban?.args ?? []).at(0);
+
+		expect(ban?.danger).toBe(true);
+		expect(target?.required).toBe(true);
+		expect(target?.module).toBe("players");
+		expect(target?.column).toBe("name");
+	});
+
+	test("declares the steam web api key as an optional platform secret, because the lists read names from it", () => {
+		const secret = (manifest.secrets ?? []).find((entry) => entry.key === "STEAM_WEB_API_KEY");
+
+		expect(secret?.required).toBe(false);
+		expect(secret?.description.ar.length).toBeGreaterThan(0);
+		expect(secret?.description.en.length).toBeGreaterThan(0);
 	});
 
 	test("registers every module the panel binds a section to", () => {
@@ -293,10 +328,19 @@ describe("the manifest guarding the files the driver depends on", () => {
 		expect(manifest.reset.keep).not.toContain("doorstop_libs");
 	});
 
-	test("archives the save directory and the settings the driver owns, and nothing else", () => {
+	test("archives saves, settings and the exact mod runtime needed to restore them", () => {
 		expect(manifest.backup.only).toEqual([
 			`${SAVE_DIRECTORY}/**`,
 			SETTINGS_FILE,
+			"BepInEx/**",
+			"doorstop_libs/**",
+			"doorstop_config.ini",
+			".doorstop_version",
+			"winhttp.dll",
+			"start_game_bepinex.sh",
+			"start_server_bepinex.sh",
+			".serverk-bepinex.json",
+			".serverk-mods.json",
 		]);
 	});
 
@@ -319,9 +363,10 @@ describe("the manifest guarding the files the driver depends on", () => {
 describe("the manifest presence matching what the roster actually sends", () => {
 	test("names the payload keys the query module emits", () => {
 		expect(manifest.presence.name).toBe("player");
-		expect(manifest.presence.id).toBe("steamId");
+		expect(manifest.presence.id).toBe("platformId");
 		expect(manifest.presence.fields.map((field) => field.key)).toEqual([
-			"steamId",
+			"account",
+			"platform",
 		]);
 	});
 
@@ -406,7 +451,7 @@ describe("the worlds table doing what a save file needs", () => {
 	});
 });
 
-describe("the access tab covering all three lists valheim reads", () => {
+describe("the players page carrying every list valheim reads", () => {
 	test("binds one table to each list file", () => {
 		expect(tables.map((table) => table.module)).toContain("admins");
 		expect(tables.map((table) => table.module)).toContain("bans");
@@ -420,6 +465,93 @@ describe("the access tab covering all three lists valheim reads", () => {
 			"permitted",
 		]) {
 			expect(tables.find((table) => table.module === module)?.add).toBeDefined();
+		}
+	});
+
+	test("puts the roster and every moderation table on the platform's own players page", () => {
+		for (const module of [
+			"players",
+			"admins",
+			"bans",
+			"permitted",
+		]) {
+			expect(tables.find((table) => table.module === module)?.place).toBe(BridgePlace.Players);
+		}
+	});
+
+	test("shows the account, the platform and the id the panel bans by", () => {
+		const online = tables.find((table) => table.module === "players");
+
+		expect((online?.columns ?? []).map((column) => column.key)).toEqual([
+			"name",
+			"account",
+			"platform",
+			"platformId",
+		]);
+	});
+
+	test("claims offline on ban, because a ban is written to a file the game reads at start", () => {
+		const ban = (tables.find((table) => table.module === "players")?.actions ?? []).find(
+			(action) => action.id === "ban",
+		);
+
+		expect(ban?.offline).toBe(true);
+	});
+
+	test("takes the name of no platform sidebar entry, now that the lists moved onto the players page", () => {
+		for (const tab of tabs) {
+			expect([
+				"overview",
+				"console",
+				"files",
+				"backups",
+				"schedules",
+				"analytics",
+				"feed",
+				"access",
+				"integrations",
+				"needs",
+				"setup",
+				"change-game",
+			]).not.toContain(tab.id);
+		}
+	});
+
+	test("leaves the sidebar entirely, because every section of the players tab is placed", () => {
+		const players = tabs.find((tab) => tab.id === "players");
+
+		for (const section of players?.sections ?? []) {
+			expect("place" in section ? section.place : undefined).toBeDefined();
+		}
+	});
+});
+
+describe("the server health detail the overview renders", () => {
+	test("places the metrics detail on the overview rather than on a tab of its own", () => {
+		const metrics = sections.find((section) => section.layout === BridgeLayout.Detail && section.module === "metrics");
+
+		expect(metrics?.layout === BridgeLayout.Detail && metrics.place).toBe(BridgePlace.Overview);
+	});
+
+	test("keeps a way back to the settings that decide what it shows", () => {
+		const metrics = sections.find((section) => section.layout === BridgeLayout.Detail && section.module === "metrics");
+
+		expect(metrics?.layout === BridgeLayout.Detail && metrics.related?.tab).toBe("settings");
+	});
+});
+
+describe("explaining every section the owner opens", () => {
+	test("writes one help line in both languages on every form", () => {
+		for (const form of forms) {
+			expect(form.help?.ar.length, `${form.id} has no arabic help`).toBeGreaterThan(0);
+			expect(form.help?.en.length, `${form.id} has no english help`).toBeGreaterThan(0);
+		}
+	});
+
+	test("writes one on every table too, because a list of ids explains nothing by itself", () => {
+		for (const table of tables) {
+			expect(table.help?.ar.length, `${table.id} has no arabic help`).toBeGreaterThan(0);
+			expect(table.help?.en.length, `${table.id} has no english help`).toBeGreaterThan(0);
 		}
 	});
 });

@@ -1,22 +1,22 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { readStamp, writeStamp } from "@serverkgg/bridge/install";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { createSteamcmd } from "@serverkgg/bridge/steam";
 import {
-	ADMIN_LIST,
-	BANNED_LIST,
 	BRANCH_VARIABLE,
 	generatePassword,
 	isGameInstalled,
+	LIST_HEADERS,
 	mergeSettings,
+	migratePlatformIds,
 	PASSWORD_FIELD,
-	PERMITTED_LIST,
 	PUBLIC_BRANCH,
 	readSettings,
 	SAVE_DIRECTORY,
 	SERVER_BINARY,
 	SETTING_DEFAULTS,
 	STEAM_APP_ID,
-	serializeSteamIds,
+	serializePlatformIds,
 	textOf,
 	WORLDS_DIRECTORY,
 } from "../shared";
@@ -25,12 +25,6 @@ export interface ValheimStamp {
 	buildId: string | null;
 	branch: string;
 }
-
-const LIST_HEADERS: Record<string, string> = {
-	[ADMIN_LIST]: "List admin players ID\nOne Steam ID per line",
-	[BANNED_LIST]: "List banned players ID\nOne Steam ID per line",
-	[PERMITTED_LIST]: "List permitted players ID\nOne Steam ID per line\nAn empty list lets everybody in",
-};
 
 const BRANCH_NAME = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 
@@ -52,8 +46,29 @@ const seedSaveDirectory = async (context: Bridge.Context) => {
 
 	for (const [path, header] of Object.entries(LIST_HEADERS)) {
 		if (!(await context.files.exists(path))) {
-			await context.files.write(path, serializeSteamIds(header, []));
+			await context.files.write(path, serializePlatformIds(header, []));
 		}
+	}
+};
+
+const migrateLists = async (context: Bridge.Context) => {
+	for (const path of Object.keys(LIST_HEADERS)) {
+		if (!(await context.files.exists(path))) {
+			continue;
+		}
+
+		const rewritten = migratePlatformIds(await context.files.read(path));
+
+		if (rewritten.migrated === 0) {
+			continue;
+		}
+
+		await context.files.write(path, rewritten.contents);
+
+		context.log("rewrote bare steam ids as valheim platform user ids", {
+			list: path,
+			migrated: rewritten.migrated,
+		});
 	}
 };
 
@@ -109,6 +124,7 @@ export const install: Bridge.Install = {
 
 		await steamcmd.linkSteamClient();
 		await seedSaveDirectory(context);
+		await migrateLists(context);
 		await seedSettings(context);
 
 		const buildId = await steamcmd.buildId();
@@ -119,7 +135,7 @@ export const install: Bridge.Install = {
 				to: buildId,
 			});
 
-			context.emit("ServerUpdated", {
+			context.emit(BridgeEventName.ServerUpdated, {
 				from: stamp.buildId,
 				to: buildId,
 			});

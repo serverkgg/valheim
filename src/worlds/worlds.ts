@@ -37,6 +37,17 @@ const refuseActiveWorld = async (context: Bridge.Context, name: string) => {
 	});
 };
 
+const requireStopped = (context: Bridge.Context) => {
+	if (!context.server.running) {
+		return;
+	}
+
+	throw new BridgeUserError({
+		ar: "أوقف سيرفرك قبل ما ترفع عالم أو تحذفه، وبعدين جرّب مرة ثانية.",
+		en: "Stop your server before uploading or deleting a world, then try again.",
+	});
+};
+
 export const worlds: Bridge.Collection = {
 	kind: BridgeKind.Collection,
 
@@ -57,6 +68,8 @@ export const worlds: Bridge.Collection = {
 	},
 
 	async add(context, input) {
+		requireStopped(context);
+
 		const source = relativeUploadPath(input);
 
 		if (source === null || !isUnder(source, WORLD_STAGING) || !(await context.files.exists(source))) {
@@ -90,7 +103,10 @@ export const worlds: Bridge.Collection = {
 		await context.files.ensure(WORLDS_DIRECTORY);
 
 		if (await context.files.exists(target)) {
-			await context.files.remove(target);
+			throw new BridgeUserError({
+				ar: "فيه ملف عالم بنفس الاسم. غيّر اسم ملفي .db و .fwl لنفس الاسم الجديد، وارفعهم مرة ثانية.",
+				en: "A world file already has this name. Give both the .db and .fwl files the same new name, then upload them again.",
+			});
 		}
 
 		await context.files.move(source, target);
@@ -127,6 +143,8 @@ export const worlds: Bridge.Collection = {
 		},
 
 		async delete(context, row) {
+			requireStopped(context);
+
 			await refuseActiveWorld(context, row.id);
 			await removeWorld(context, row.id);
 

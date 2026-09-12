@@ -106,6 +106,17 @@ describe("guarding the two settings valheim refuses to start with", () => {
 		expect(passwordInName("Serverk hall", "vikings")).toBe(false);
 	});
 
+	test("refuses the password inside the world name, which valheim rejects the same way", () => {
+		expect(() =>
+			guardSettings(
+				stored({
+					password: "vikings",
+					world: "Vikings",
+				}),
+			),
+		).toThrow(BridgeUserError);
+	});
+
 	test("refuses a password with a space in it", () => {
 		expect(() =>
 			guardSettings(

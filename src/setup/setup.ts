@@ -80,8 +80,8 @@ export const setup: Bridge.Setup = {
 				en: "Invite your friends",
 			},
 			help: {
-				ar: "انسخ عنوان سيرفرك وأرسله لهم، يضيفونه من Join Game ➜ Add server.",
-				en: "Copy your address and send it to them — they add it under Join Game, Add server.",
+				ar: "انسخ عنوان سيرفرك وأرسله لهم، يضيفونه من Join Game ➜ Add server. ولو مفعّل اللعب المشترك، كود الدخول يطلع لك في صفحة النظرة العامة ويدخلون فيه من Join by code.",
+				en: "Copy your address and send it to them — they add it under Join Game, Add server. With crossplay on, the join code sits on the Overview page and they use Join by code instead.",
 			},
 		},
 	],

@@ -36,17 +36,19 @@ Your server is still setting up, so it has no address yet — it appears here th
 @[open](console)
 :::
 
-> [!note] Friends on Xbox or Game Pass cannot join by address. Turn **Crossplay** on in the settings and a six-digit join code appears in the players tab — they use **Join Game, Join by code**.
+> [!note] Friends on Xbox, PS5 or Switch 2 cannot join by address. Turn **Crossplay** on in the settings and a six-digit join code appears on the Overview page — they use **Join Game, Join by code**.
 
 ## Make yourself admin
 
-To unlock the in-game admin commands (the F5 console), your Steam ID has to be on the admin list.
+To unlock the in-game admin commands (the F5 console), your player id has to be on the admin list.
 
-1. Open the **Access** tab in the panel
-2. Add your own Steam ID — 17 digits starting with 7656, which steamid.io resolves from your profile link
+Since 1.0 Valheim reads a **Platform User ID** rather than a bare Steam number: on Steam that is `V_` followed by your Steam64 id, and on Xbox it is `Xbox_` followed by theirs.
+
+1. Open the **Players** page
+2. Add your own platform id — a bare Steam number (17 digits starting with 7656, which steamid.io resolves from your profile link) gets the `V_` prefix added for you
 3. Restart your server
 
-@[open](panel:access)
+@[open](panel:players)
 
 > [!warning] Valheim reads the admin, ban and allow lists at start only. Any addition or removal needs a restart to take effect.
 
@@ -54,9 +56,9 @@ To unlock the in-game admin commands (the F5 console), your Steam ID has to be o
 
 None of this is missing from your server — it is missing from Valheim itself, whose dedicated server ships with no console and no RCON:
 
-- **No console commands.** The console tab shows the log; you cannot send commands to the server.
+- **No console commands.** Valheim reads nothing from the console at all, so the ones we answer there (`status`, `players`, `worlds`, `mods`, `joincode`, `ban`, `unban`) are handled by the panel rather than passed to the game. Anything else belongs in game on F5.
 - **No announcements.** There is no way for the server to put a message in front of players.
-- **No kick.** Ban from the players tab adds the ID to the ban list and stops them the next time they try to join — restart your server to drop them if they are on right now.
+- **No kick.** Ban from the Players page adds the platform id to the ban list and stops them the next time they try to join — restart your server to drop them if they are on right now.
 - **No manual save.** Valheim saves on its interval (set in the settings) and on shutdown. A backup archives the last autosave.
 
 Anything that needs live admin commands is done from inside Valheim on F5, once you are an admin.

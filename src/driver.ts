@@ -2,7 +2,7 @@ import type { BridgeDriver } from "@serverkgg/bridge";
 import { worldActions } from "./actions";
 import { backup } from "./backup";
 import { admins, bans, permitted, players } from "./collections";
-import { session } from "./details";
+import { metrics } from "./details";
 import { events } from "./events";
 import { install } from "./install";
 import { lifecycle } from "./lifecycle";
@@ -30,7 +30,7 @@ export const driver: BridgeDriver = {
 		worlds,
 		worldActions,
 		players,
-		session,
+		metrics,
 		admins,
 		bans,
 		permitted,

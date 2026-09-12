@@ -1,15 +1,19 @@
 import { type Bridge, BridgeKind, BridgeUserError } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { execDetail } from "@serverkgg/bridge/utils";
 import { packInstalled } from "../mods";
 import {
 	guardSettings,
 	installRoot,
+	metrics,
 	readSettings,
+	readVersionBanner,
 	roster,
 	SAVE_DIRECTORY,
 	SERVER_BINARY,
 	SERVER_READY,
 	startCommand,
+	watchMetrics,
 	watchRoster,
 } from "../shared";
 
@@ -36,6 +40,7 @@ export const lifecycle: Bridge.Lifecycle = {
 
 		return startCommand({
 			gamePort: context.port("game"),
+			instanceId: context.server.code,
 			savedir: `${root}/${SAVE_DIRECTORY}`,
 			settings,
 		});
@@ -43,15 +48,21 @@ export const lifecycle: Bridge.Lifecycle = {
 
 	async onReady(context) {
 		roster.clear();
+		metrics.clear();
+		metrics.markReady();
 		watchRoster(context);
+		watchMetrics(context);
 
-		context.emit("ServerStarted");
+		await readVersionBanner(context);
+
+		context.emit(BridgeEventName.ServerStarted);
 	},
 
 	async stop(context) {
-		context.emit("ServerStopping");
+		context.emit(BridgeEventName.ServerStopping);
 
 		roster.clear();
+		metrics.clear();
 
 		const signalled = await context.exec(
 			[
