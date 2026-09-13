@@ -1,5 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { BridgeFormTarget, BridgeLayout, BridgePlace, BridgeSetupStepKind, BridgeUploadMode } from "@serverkgg/bridge";
+import {
+	type BridgeDriver,
+	BridgeFormTarget,
+	BridgeKind,
+	BridgeLayout,
+	BridgePlace,
+	BridgeSetupStepKind,
+	BridgeUploadMode,
+} from "@serverkgg/bridge";
 import { GuideOpenTab } from "@serverkgg/bridge/guides";
 import { isBridgeEventName } from "@serverkgg/bridge/protocol";
 import { bridgePanelSchema, bridgeSetupManifestSchema, bridgeTerminalManifestSchema } from "@serverkgg/bridge/wire";
@@ -553,6 +561,133 @@ describe("explaining every section the owner opens", () => {
 			expect(table.help?.ar.length, `${table.id} has no arabic help`).toBeGreaterThan(0);
 			expect(table.help?.en.length, `${table.id} has no english help`).toBeGreaterThan(0);
 		}
+	});
+});
+
+type PanelModule = NonNullable<BridgeDriver["modules"]>[string];
+
+const declaredActionsOf = (module: PanelModule): string[] => {
+	switch (module.kind) {
+		case BridgeKind.Actions: {
+			return Object.keys(module.actions);
+		}
+
+		case BridgeKind.Collection: {
+			return [
+				...(module.add
+					? [
+							"add",
+						]
+					: []),
+				...Object.keys(module.actions ?? {}),
+			];
+		}
+
+		case BridgeKind.Detail: {
+			return Object.keys(module.actions ?? {});
+		}
+
+		case BridgeKind.Catalog: {
+			return [
+				"install",
+				"remove",
+				...(module.toggle
+					? [
+							"toggle",
+						]
+					: []),
+			];
+		}
+
+		case BridgeKind.Settings: {
+			return module.write
+				? [
+						"write",
+					]
+				: [];
+		}
+
+		default: {
+			return [];
+		}
+	}
+};
+
+const protectedActionsOf = (module: PanelModule) => {
+	return "protectedActions" in module ? (module.protectedActions ?? []) : [];
+};
+
+describe("taking a recovery copy before an action rewrites the world or the mod set", () => {
+	test("protects world uploads and deletes, the loader and every catalog change", () => {
+		const declared = Object.fromEntries(
+			Object.entries(modules).flatMap(([id, module]) => {
+				const actions = protectedActionsOf(module);
+
+				return actions.length > 0
+					? [
+							[
+								id,
+								actions,
+							],
+						]
+					: [];
+			}),
+		);
+
+		expect(declared).toEqual({
+			worlds: [
+				"add",
+				"delete",
+			],
+			bepinex: [
+				"setup",
+				"uninstall",
+			],
+			mods: [
+				"install",
+				"remove",
+				"toggle",
+			],
+		});
+	});
+
+	test("protects only mutations the module declares, on modules that work while the game is stopped", () => {
+		for (const [id, module] of Object.entries(modules)) {
+			const actions = protectedActionsOf(module);
+
+			if (actions.length === 0) {
+				continue;
+			}
+
+			expect("requiresRunning" in module && module.requiresRunning === true, `${id} requires running`).toBe(false);
+
+			for (const action of actions) {
+				expect(declaredActionsOf(module), `${id} does not declare ${action}`).toContain(action);
+			}
+		}
+	});
+
+	test("leaves settings writes and the steam id lists unprotected, because a restart alone applies them", () => {
+		for (const id of [
+			"settings",
+			"admins",
+			"bans",
+			"permitted",
+		]) {
+			const module = modules[id];
+
+			expect(module === undefined ? [] : protectedActionsOf(module)).toEqual([]);
+		}
+	});
+
+	test("leaves switching and creating a world unprotected, because they only write the world name the next start reads", () => {
+		const worldsModule = modules.worlds;
+		const worldActionsModule = modules.worldActions;
+
+		expect(worldsModule === undefined ? [] : declaredActionsOf(worldsModule)).toContain("activate");
+		expect(worldsModule === undefined ? [] : protectedActionsOf(worldsModule)).not.toContain("activate");
+		expect(worldActionsModule === undefined ? [] : declaredActionsOf(worldActionsModule)).toContain("create");
+		expect(worldActionsModule === undefined ? [] : protectedActionsOf(worldActionsModule)).toEqual([]);
 	});
 });
 

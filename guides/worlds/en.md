@@ -24,18 +24,20 @@ On Linux:
 ```
 
 1. Close Valheim first so the world is written out completely
-2. Stop your server, then open the **Worlds** tab in the panel and press **Upload a world**
+2. Open the **Worlds** tab in the panel and press **Upload a world**
 3. Pick both files together — the `.db` and the `.fwl`
 4. Press **Activate** on the world once it appears in the table
-5. Start your server
+5. Restart your server, or start it if it is stopped
 
-> [!warning] Uploads require a stopped server. Existing world files cannot be replaced. If a name is already taken, give both the `.db` and `.fwl` files the same new name before uploading.
+> [!note] You do not need to stop your server. Before the world files go in we take a backup, and if your server is running we stop it and start it again for you. If your backup storage is full or a backup is still running, the upload cannot start until you free some space or that backup finishes.
+
+> [!warning] Existing world files cannot be replaced. If a name is already taken, give both the `.db` and `.fwl` files the same new name before uploading.
 
 ## Switch between worlds
 
 Every row in the table has an **Activate** button. Activating changes which world your server runs, and it applies after a restart. The old world stays exactly where it is — switch back whenever you like.
 
-Stop your server before deleting a world. You cannot delete the selected world; activate another one first, then delete it while the server remains stopped.
+You cannot delete the selected world; activate another one first, then delete it. Deleting works like uploading: we take a backup first, and if your server is running we stop it and start it again for you.
 
 ## Start a fresh world
 

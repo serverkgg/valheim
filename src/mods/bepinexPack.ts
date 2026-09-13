@@ -99,10 +99,25 @@ export const installPack = async (context: Bridge.Context): Promise<PackStamp> =
 
 	await context.files.download(PACK_ARCHIVE, thunderstoreDownloadUrl(version.full_name));
 
-	await context.files.extract(PACK_ARCHIVE, PACK_STAGING, {
-		select: PACK_ROOT,
-		tree: true,
-	});
+	try {
+		await context.files.extract(PACK_ARCHIVE, PACK_STAGING, {
+			select: PACK_ROOT,
+			tree: true,
+		});
+	} catch (error) {
+		await context.files.remove(PACK_STAGING);
+		await context.files.remove(PACK_ARCHIVE);
+
+		context.log.error("could not unpack the bepinex pack", {
+			version: version.version_number,
+			reason: error instanceof Error ? error.message : String(error),
+		});
+
+		throw new BridgeUserError({
+			ar: "ما قدرنا نفك ملفات BepInEx. جرّب مرة ثانية بعد شوي.",
+			en: "We could not unpack BepInEx. Try again in a moment.",
+		});
+	}
 
 	const merged = await context.exec([
 		"cp",

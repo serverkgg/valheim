@@ -129,22 +129,44 @@ const fileNames = async (context: Bridge.Context, directory: string) => {
 };
 
 const topLevelNames = async (context: Bridge.Context, directory: string) => {
-	const names = new Set<string>();
+	const listed = await context.exec([
+		"find",
+		directory,
+		"-mindepth",
+		"1",
+		"-maxdepth",
+		"1",
+		"-printf",
+		"%f\\n",
+	]);
 
-	for (const entry of await context.files.list(`${directory}/**`)) {
-		const name = entry.path
-			.slice(directory.length + 1)
-			.split("/")
-			.at(0);
-
-		if (name !== undefined && name.length > 0) {
-			names.add(name);
-		}
+	if (listed.code !== 0) {
+		throw new Error(`the mod folder could not be read — ${execDetail(listed)}`);
 	}
 
-	return [
-		...names,
-	];
+	return listed.stdout.split("\n").filter((name) => name.length > 0);
+};
+
+const titleOf = (version: ThunderstoreVersion) => {
+	return version.name.replaceAll("_", " ");
+};
+
+const extractMod = async (context: Bridge.Context, archive: string, staging: string, version: ThunderstoreVersion) => {
+	try {
+		await context.files.extract(archive, staging, {
+			tree: true,
+		});
+	} catch (error) {
+		context.log.error("could not unpack a mod", {
+			mod: version.full_name,
+			reason: error instanceof Error ? error.message : String(error),
+		});
+
+		throw new BridgeUserError({
+			ar: `ما قدرنا نفك ملفات "${titleOf(version)}". جرّب مرة ثانية، وإذا تكرر اختر مود ثاني.`,
+			en: `We could not unpack "${titleOf(version)}". Try again, and if it keeps failing pick another mod.`,
+		});
+	}
 };
 
 const removePaths = async (context: Bridge.Context, paths: string[]) => {
@@ -181,74 +203,78 @@ const unpack = async (context: Bridge.Context, id: string, version: Thunderstore
 		archive,
 	]);
 
-	await context.files.ensure(staging);
+	try {
+		await context.files.ensure(staging);
 
-	await context.files.download(archive, thunderstoreDownloadUrl(version.full_name));
+		await context.files.download(archive, thunderstoreDownloadUrl(version.full_name));
 
-	await context.files.extract(archive, staging, {
-		tree: true,
-	});
+		await extractMod(context, archive, staging, version);
 
-	for (const name of await fileNames(context, staging)) {
-		if (isMetadataFile(name)) {
-			await context.files.remove(`${staging}/${name}`);
-		}
-	}
-
-	const extras: string[] = [];
-
-	let source = staging;
-
-	if (await context.files.exists(`${staging}/BepInEx`)) {
-		for (const [name, target] of [
-			[
-				"patchers",
-				PATCHERS_DIRECTORY,
-			],
-			[
-				"config",
-				CONFIG_DIRECTORY,
-			],
-		] as const) {
-			const nested = `${staging}/BepInEx/${name}`;
-
-			if (!(await context.files.exists(nested))) {
-				continue;
+		for (const name of await fileNames(context, staging)) {
+			if (isMetadataFile(name)) {
+				await context.files.remove(`${staging}/${name}`);
 			}
-
-			for (const entry of await topLevelNames(context, nested)) {
-				extras.push(`${target}/${entry}`);
-			}
-
-			await copyTree(context, nested, target);
-			await context.files.remove(nested);
 		}
 
-		source = (await context.files.exists(`${staging}/BepInEx/plugins`))
-			? `${staging}/BepInEx/plugins`
-			: `${staging}/BepInEx`;
+		const extras: string[] = [];
+
+		let source = staging;
+
+		if (await context.files.exists(`${staging}/BepInEx`)) {
+			for (const [name, target] of [
+				[
+					"patchers",
+					PATCHERS_DIRECTORY,
+				],
+				[
+					"config",
+					CONFIG_DIRECTORY,
+				],
+			] as const) {
+				const nested = `${staging}/BepInEx/${name}`;
+
+				if (!(await context.files.exists(nested))) {
+					continue;
+				}
+
+				for (const entry of await topLevelNames(context, nested)) {
+					extras.push(`${target}/${entry}`);
+				}
+
+				await copyTree(context, nested, target);
+				await context.files.remove(nested);
+			}
+
+			source = (await context.files.exists(`${staging}/BepInEx/plugins`))
+				? `${staging}/BepInEx/plugins`
+				: `${staging}/BepInEx`;
+		}
+
+		await removePaths(context, [
+			enabledPath(id),
+			disabledPath(id),
+		]);
+
+		try {
+			await copyTree(context, source, enabledPath(id));
+		} catch (error) {
+			await removePaths(context, [
+				enabledPath(id),
+			]);
+
+			throw error;
+		}
+
+		return {
+			sizeBytes: await context.files.size(enabledPath(id)),
+			extras,
+		};
+	} finally {
+		await removePaths(context, [
+			staging,
+			archive,
+		]);
 	}
-
-	await removePaths(context, [
-		enabledPath(id),
-		disabledPath(id),
-	]);
-
-	await copyTree(context, source, enabledPath(id));
-
-	const sizeBytes = (await context.files.list(`${enabledPath(id)}/**`)).reduce((total, entry) => {
-		return entry.directory ? total : total + entry.sizeBytes;
-	}, 0);
-
-	await removePaths(context, [
-		staging,
-		archive,
-	]);
-
-	return {
-		sizeBytes,
-		extras,
-	};
 };
 
 const entryOf = (id: string, version: ThunderstoreVersion, unpacked: UnpackResult): ModEntry => {
@@ -258,7 +284,7 @@ const entryOf = (id: string, version: ThunderstoreVersion, unpacked: UnpackResul
 		namespace: version.namespace,
 		name: version.name,
 		version: version.version_number,
-		title: version.name.replaceAll("_", " "),
+		title: titleOf(version),
 		icon: version.icon,
 		pageUrl: version.website_url,
 		sizeBytes: unpacked.sizeBytes,
@@ -442,6 +468,11 @@ const togglePackage = async (context: Bridge.Context, id: string, enabled: boole
 
 export const mods: Bridge.Catalog = {
 	kind: BridgeKind.Catalog,
+	protectedActions: [
+		"install",
+		"remove",
+		"toggle",
+	],
 	pageSize: PAGE_SIZE,
 
 	async search(context, query) {

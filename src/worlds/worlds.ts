@@ -50,6 +50,10 @@ const requireStopped = (context: Bridge.Context) => {
 
 export const worlds: Bridge.Collection = {
 	kind: BridgeKind.Collection,
+	protectedActions: [
+		"add",
+		"delete",
+	],
 
 	async list(context) {
 		const active = await activeWorld(context);

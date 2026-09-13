@@ -492,8 +492,8 @@ const worldsTab: Bridge.Tab = {
 				en: "Your worlds",
 			},
 			help: {
-				ar: "أوقف سيرفرك قبل رفع عالم أو حذفه. ارفع كل عالم باسم مختلف؛ ما نستبدل ملفات موجودة. تفعيل عالم ينطبق بعد إعادة التشغيل.",
-				en: "Stop your server before uploading or deleting worlds. Use a distinct name for each world; existing files cannot be replaced. Activating a world applies after a restart.",
+				ar: "لما ترفع عالم أو تحذفه، ناخذ نسخة احتياطية أول، وإذا سيرفرك شغّال نوقفه ونرجّع نشغّله لحالنا. ارفع كل عالم باسم مختلف؛ ما نستبدل ملفات موجودة. تفعيل عالم ينطبق بعد إعادة التشغيل.",
+				en: "When you upload or delete a world, we take a backup first, stopping your server and starting it again for you if it is running. Use a distinct name for each world; existing files cannot be replaced. Activating a world applies after a restart.",
 			},
 			module: "worlds",
 			restartHint: true,
@@ -904,6 +904,10 @@ const modsTab: Bridge.Tab = {
 		{
 			layout: BridgeLayout.Detail,
 			id: "loader",
+			help: {
+				ar: "حالة BepInEx على سيرفرك: مركّب ولا لا، إصداره، وكم مود يشتغل عليه.",
+				en: "Where BepInEx stands on your server: whether it is installed, its version, and how many mods run on it.",
+			},
 			module: "loader",
 			empty: {
 				ar: "ما قدرنا نقرأ حالة BepInEx.",
