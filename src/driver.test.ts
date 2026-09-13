@@ -617,8 +617,8 @@ const protectedActionsOf = (module: PanelModule) => {
 	return "protectedActions" in module ? (module.protectedActions ?? []) : [];
 };
 
-describe("taking a recovery copy before an action rewrites the world or the mod set", () => {
-	test("protects world uploads and deletes, the loader and every catalog change", () => {
+describe("taking a recovery copy only before an action destroys something nothing else brings back", () => {
+	test("protects deleting a world and removing the loader, and nothing else", () => {
 		const declared = Object.fromEntries(
 			Object.entries(modules).flatMap(([id, module]) => {
 				const actions = protectedActionsOf(module);
@@ -636,17 +636,10 @@ describe("taking a recovery copy before an action rewrites the world or the mod 
 
 		expect(declared).toEqual({
 			worlds: [
-				"add",
 				"delete",
 			],
 			bepinex: [
-				"setup",
 				"uninstall",
-			],
-			mods: [
-				"install",
-				"remove",
-				"toggle",
 			],
 		});
 	});
@@ -680,14 +673,29 @@ describe("taking a recovery copy before an action rewrites the world or the mod 
 		}
 	});
 
-	test("leaves switching and creating a world unprotected, because they only write the world name the next start reads", () => {
+	test("leaves uploading, switching and creating a world unprotected, because none of them destroys a world", () => {
 		const worldsModule = modules.worlds;
 		const worldActionsModule = modules.worldActions;
 
-		expect(worldsModule === undefined ? [] : declaredActionsOf(worldsModule)).toContain("activate");
-		expect(worldsModule === undefined ? [] : protectedActionsOf(worldsModule)).not.toContain("activate");
+		for (const action of [
+			"add",
+			"activate",
+		]) {
+			expect(worldsModule === undefined ? [] : declaredActionsOf(worldsModule)).toContain(action);
+			expect(worldsModule === undefined ? [] : protectedActionsOf(worldsModule)).not.toContain(action);
+		}
+
 		expect(worldActionsModule === undefined ? [] : declaredActionsOf(worldActionsModule)).toContain("create");
 		expect(worldActionsModule === undefined ? [] : protectedActionsOf(worldActionsModule)).toEqual([]);
+	});
+
+	test("leaves the mod catalog and the loader setup unprotected, because installing is additive and reversible", () => {
+		const modsModule = modules.mods;
+		const bepinexModule = modules.bepinex;
+
+		expect(modsModule === undefined ? [] : protectedActionsOf(modsModule)).toEqual([]);
+		expect(bepinexModule === undefined ? [] : declaredActionsOf(bepinexModule)).toContain("setup");
+		expect(bepinexModule === undefined ? [] : protectedActionsOf(bepinexModule)).not.toContain("setup");
 	});
 });
 

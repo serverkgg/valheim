@@ -51,7 +51,6 @@ const requireStopped = (context: Bridge.Context) => {
 export const worlds: Bridge.Collection = {
 	kind: BridgeKind.Collection,
 	protectedActions: [
-		"add",
 		"delete",
 	],
 

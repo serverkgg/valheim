@@ -29,7 +29,7 @@ On Linux:
 4. Press **Activate** on the world once it appears in the table
 5. Restart your server, or start it if it is stopped
 
-> [!note] You do not need to stop your server. Before the world files go in we take a backup, and if your server is running we stop it and start it again for you. If your backup storage is full or a backup is still running, the upload cannot start until you free some space or that backup finishes.
+> [!note] Stop your server before uploading. World files cannot go in while it runs, and we tell you if you try.
 
 > [!warning] Existing world files cannot be replaced. If a name is already taken, give both the `.db` and `.fwl` files the same new name before uploading.
 
@@ -37,7 +37,7 @@ On Linux:
 
 Every row in the table has an **Activate** button. Activating changes which world your server runs, and it applies after a restart. The old world stays exactly where it is — switch back whenever you like.
 
-You cannot delete the selected world; activate another one first, then delete it. Deleting works like uploading: we take a backup first, and if your server is running we stop it and start it again for you.
+You cannot delete the selected world; activate another one first, then delete it. Deleting takes a backup first, and if your server is running we stop it and start it again for you. A failed backup stops the delete.
 
 ## Start a fresh world
 

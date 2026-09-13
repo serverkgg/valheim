@@ -6,7 +6,6 @@ import { readSidecar, writeSidecar } from "./modsSidecar";
 export const bepinex: Bridge.Actions = {
 	kind: BridgeKind.Actions,
 	protectedActions: [
-		"setup",
 		"uninstall",
 	],
 	actions: {

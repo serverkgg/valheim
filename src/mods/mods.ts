@@ -468,11 +468,6 @@ const togglePackage = async (context: Bridge.Context, id: string, enabled: boole
 
 export const mods: Bridge.Catalog = {
 	kind: BridgeKind.Catalog,
-	protectedActions: [
-		"install",
-		"remove",
-		"toggle",
-	],
 	pageSize: PAGE_SIZE,
 
 	async search(context, query) {

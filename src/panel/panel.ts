@@ -492,8 +492,8 @@ const worldsTab: Bridge.Tab = {
 				en: "Your worlds",
 			},
 			help: {
-				ar: "لما ترفع عالم أو تحذفه، ناخذ نسخة احتياطية أول، وإذا سيرفرك شغّال نوقفه ونرجّع نشغّله لحالنا. ارفع كل عالم باسم مختلف؛ ما نستبدل ملفات موجودة. تفعيل عالم ينطبق بعد إعادة التشغيل.",
-				en: "When you upload or delete a world, we take a backup first, stopping your server and starting it again for you if it is running. Use a distinct name for each world; existing files cannot be replaced. Activating a world applies after a restart.",
+				ar: "الرفع يبي سيرفرك واقف. الحذف ناخذ له نسخة احتياطية أول، وإذا سيرفرك شغّال نوقفه ونرجّع نشغّله لحالنا. ارفع كل عالم باسم مختلف؛ ما نستبدل ملفات موجودة. تفعيل عالم ينطبق بعد إعادة التشغيل.",
+				en: "Uploading needs your server stopped. Deleting takes a backup first, stopping your server and starting it again for you if it is running. Use a distinct name for each world; existing files cannot be replaced. Activating a world applies after a restart.",
 			},
 			module: "worlds",
 			restartHint: true,
