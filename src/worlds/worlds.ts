@@ -65,7 +65,13 @@ export const worlds: Bridge.Collection = {
 				name: world.name,
 				size: formatByteSize(world.sizeBytes),
 				active: world.name === active ? ACTIVE_MARK : "",
-				state: missing === null ? "" : `ينقصه ملف .${missing} / missing its .${missing}`,
+				state:
+					missing === null
+						? ""
+						: {
+								ar: `ينقصه ملف .${missing}`,
+								en: `missing its .${missing}`,
+							},
 			};
 		});
 	},
