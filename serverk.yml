@@ -83,6 +83,10 @@ backup:
     - save/**/*.fwl.new
     - BepInEx/LogOutput.log
     - BepInEx/cache/**
+    - save/**/*_backup_auto-*.db
+    - save/**/*_backup_auto-*.fwl
+    - save/**/*.db.old
+    - save/**/*.fwl.old
 
 secrets:
   - key: STEAM_WEB_API_KEY
