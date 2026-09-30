@@ -662,3 +662,29 @@ describe("reporting the bepinex loader to the activity feed", () => {
 		expect(reported).toEqual([]);
 	});
 });
+
+describe("offering to remove bepinex", () => {
+	test("offers the removal while the loader is on the server", async () => {
+		const { context } = harness({
+			extract: pluginOnly,
+		});
+
+		expect(await bepinex.unavailable?.(context)).toEqual({});
+	});
+
+	test("says bepinex is not installed in the words the refusal uses", async () => {
+		const { context, files } = harness({
+			extract: pluginOnly,
+		});
+
+		files.delete(DOORSTOP_MARKER);
+		files.delete(BEPINEX_CORE);
+
+		const unavailable = await bepinex.unavailable?.(context);
+
+		expect(unavailable?.uninstall?.en).toBe("BepInEx is not installed.");
+		await expect(bepinex.actions.uninstall?.(context, {}) ?? Promise.resolve()).rejects.toThrow(
+			"BepInEx is not installed.",
+		);
+	});
+});

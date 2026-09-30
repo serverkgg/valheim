@@ -27,15 +27,33 @@ export const activeWorld = async (context: Bridge.Context) => {
 	return settingsOf(await readSettings(context)).world;
 };
 
+const ACTIVE_WORLD_DELETE: Bridge.Text = {
+	ar: "ما تقدر تحذف العالم الشغّال. فعّل عالم ثاني أول.",
+	en: "You cannot delete the active world — activate another one first.",
+};
+
+const ACTIVE_WORLD_ACTIVATE: Bridge.Text = {
+	ar: "هذا العالم شغّال أصلًا.",
+	en: "This world is already the active one.",
+};
+
+const missingMeta = (name: string): Bridge.Text => {
+	return {
+		ar: `ملف .${WORLD_META_EXTENSION} حق "${name}" ناقص، وبدونه فالهايم يبني عالم جديد بنفس الاسم. ارفعه أول.`,
+		en: `"${name}" has no .${WORLD_META_EXTENSION} file, and without it Valheim generates a fresh world under that name. Upload it first.`,
+	};
+};
+
+const hasMeta = async (context: Bridge.Context, name: string) => {
+	return await context.files.exists(worldPath(name, WORLD_META_EXTENSION));
+};
+
 const refuseActiveWorld = async (context: Bridge.Context, name: string) => {
 	if ((await activeWorld(context)) !== name) {
 		return;
 	}
 
-	throw new BridgeUserError({
-		ar: "ما تقدر تحذف العالم الشغّال. فعّل عالم ثاني أول.",
-		en: "You cannot delete the active world — activate another one first.",
-	});
+	throw new BridgeUserError(ACTIVE_WORLD_DELETE);
 };
 
 const requireStopped = (context: Bridge.Context) => {
@@ -44,8 +62,8 @@ const requireStopped = (context: Bridge.Context) => {
 	}
 
 	throw new BridgeUserError({
-		ar: "أوقف سيرفرك قبل ما ترفع عالم أو تحذفه، وبعدين جرّب مرة ثانية.",
-		en: "Stop your server before uploading or deleting a world, then try again.",
+		ar: "أوقف سيرفرك قبل ما ترفع عالم، وبعدين جرّب مرة ثانية.",
+		en: "Stop your server before uploading a world, then try again.",
 	});
 };
 
@@ -144,20 +162,14 @@ export const worlds: Bridge.Collection = {
 
 	actions: {
 		async activate(context, row) {
-			if (!(await context.files.exists(worldPath(row.id, WORLD_META_EXTENSION)))) {
-				throw new BridgeUserError({
-					ar: `ملف .${WORLD_META_EXTENSION} حق "${row.id}" ناقص، وبدونه فالهايم يبني عالم جديد بنفس الاسم. ارفعه أول.`,
-					en: `"${row.id}" has no .${WORLD_META_EXTENSION} file, and without it Valheim generates a fresh world under that name. Upload it first.`,
-				});
+			if (!(await hasMeta(context, row.id))) {
+				throw new BridgeUserError(missingMeta(row.id));
 			}
 
 			const previous = await activeWorld(context);
 
 			if (previous === row.id) {
-				throw new BridgeUserError({
-					ar: "هذا العالم شغّال أصلًا.",
-					en: "This world is already the active one.",
-				});
+				throw new BridgeUserError(ACTIVE_WORLD_ACTIVATE);
 			}
 
 			await mergeSettings(context, {
@@ -184,8 +196,6 @@ export const worlds: Bridge.Collection = {
 		},
 
 		async delete(context, row) {
-			requireStopped(context);
-
 			await refuseActiveWorld(context, row.id);
 			await removeWorld(context, row.id);
 
@@ -205,5 +215,20 @@ export const worlds: Bridge.Collection = {
 				},
 			});
 		},
+	},
+
+	async unavailable(context, row): Promise<Bridge.Unavailable> {
+		if (row.active === ACTIVE_MARK) {
+			return {
+				delete: ACTIVE_WORLD_DELETE,
+				activate: ACTIVE_WORLD_ACTIVATE,
+			};
+		}
+
+		return (await hasMeta(context, row.id))
+			? {}
+			: {
+					activate: missingMeta(row.id),
+				};
 	},
 };

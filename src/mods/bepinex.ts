@@ -27,6 +27,15 @@ const removalFactsOf = async (context: Bridge.Context): Promise<RemovalFacts> =>
 	}
 };
 
+const NOT_INSTALLED: Bridge.Text = {
+	ar: "BepInEx مو مركّب أصلًا.",
+	en: "BepInEx is not installed.",
+};
+
+const installedAtAll = async (context: Bridge.Context) => {
+	return (await packInstalled(context)) || (await readPackStamp(context)) !== null;
+};
+
 export const bepinex: Bridge.Actions = {
 	kind: BridgeKind.Actions,
 	protectedActions: [
@@ -61,11 +70,8 @@ export const bepinex: Bridge.Actions = {
 		},
 
 		async uninstall(context) {
-			if (!(await packInstalled(context)) && (await readPackStamp(context)) === null) {
-				throw new BridgeUserError({
-					ar: "BepInEx مو مركّب أصلًا.",
-					en: "BepInEx is not installed.",
-				});
+			if (!(await installedAtAll(context))) {
+				throw new BridgeUserError(NOT_INSTALLED);
 			}
 
 			const { version, count } = await removalFactsOf(context);
@@ -99,5 +105,13 @@ export const bepinex: Bridge.Actions = {
 				},
 			});
 		},
+	},
+
+	async unavailable(context): Promise<Bridge.Unavailable> {
+		return (await installedAtAll(context))
+			? {}
+			: {
+					uninstall: NOT_INSTALLED,
+				};
 	},
 };

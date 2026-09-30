@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { WORLD_NAME_ARGUMENT, worldActions } from "../actions";
-import { SETTINGS_FILE, WORLD_STAGING, worldPath } from "../shared";
+import { SETTINGS_FILE, WORLD_STAGING, WORLDS_DIRECTORY, worldPath } from "../shared";
 import { worlds } from "./worlds";
 
 const PASSWORD = "hunter2-secret";
@@ -46,6 +46,17 @@ const harness = (running: boolean, active: string, seed: Record<string, string> 
 		files: {
 			async exists(path: string) {
 				return files.has(path);
+			},
+			async list() {
+				return [
+					...files.keys(),
+				]
+					.filter((path) => path.startsWith(`${WORLDS_DIRECTORY}/`))
+					.map((path) => ({
+						path,
+						name: path.slice(WORLDS_DIRECTORY.length + 1),
+						sizeBytes: 1,
+					}));
 			},
 			async ensure() {},
 			async remove(path: string) {
@@ -154,20 +165,6 @@ describe("world files stay safe during panel changes", () => {
 		await expect(addWorld(context, source)).rejects.toThrow("move failed");
 		expect(files.get(source)).toBe("buildings");
 		expect(files.has(worldPath("Imported", "db"))).toBe(false);
-	});
-
-	test("cannot delete the running world after selecting its replacement", async () => {
-		const data = worldPath("Old", "db");
-		const meta = worldPath("Old", "fwl");
-		const { context, files } = harness(true, "Old", {
-			[data]: "old buildings",
-			[meta]: "old seed",
-			[worldPath("Next", "fwl")]: "next seed",
-		});
-		await worldAction(context, "activate", "Next");
-		await expect(worldAction(context, "delete", "Old")).rejects.toThrow(BridgeUserError);
-		expect(files.get(data)).toBe("old buildings");
-		expect(files.get(meta)).toBe("old seed");
 	});
 
 	test("still protects the selected world while stopped", async () => {
@@ -285,11 +282,65 @@ describe("reporting world changes to the activity feed", () => {
 	});
 
 	test("reports nothing when a change is refused", async () => {
-		const { context, reported } = harness(true, "Serverk", {
+		const { context, reported } = harness(false, "Old", {
 			[worldPath("Old", "db")]: "old",
 		});
 
 		await expect(worldAction(context, "delete", "Old")).rejects.toThrow(BridgeUserError);
 		expect(reported).toEqual([]);
+	});
+});
+
+describe("which world actions apply", () => {
+	const listedRow = async (context: Bridge.Context, id: string) => {
+		const row = (await worlds.list(context)).find((entry) => entry.id === id);
+
+		if (!row) {
+			throw new Error(`the list built no row for ${id}`);
+		}
+
+		return row;
+	};
+
+	test("the active world cannot be deleted or activated, and says why in the words the refusal uses", async () => {
+		const { context, files } = harness(false, "Serverk", {
+			[worldPath("Serverk", "db")]: "buildings",
+			[worldPath("Serverk", "fwl")]: "seed",
+		});
+		const unavailable = await worlds.unavailable?.(context, await listedRow(context, "Serverk"));
+
+		expect(Object.keys(unavailable ?? {}).sort()).toEqual([
+			"activate",
+			"delete",
+		]);
+		await expect(worldAction(context, "delete", "Serverk")).rejects.toThrow(unavailable?.delete?.en);
+		await expect(worldAction(context, "activate", "Serverk")).rejects.toThrow(unavailable?.activate?.en);
+		expect(files.get(worldPath("Serverk", "db"))).toBe("buildings");
+	});
+
+	test("a world missing its .fwl cannot be activated, and says which file to upload", async () => {
+		const { context } = harness(false, "Serverk", {
+			[worldPath("Half", "db")]: "buildings",
+		});
+		const unavailable = await worlds.unavailable?.(context, await listedRow(context, "Half"));
+
+		expect(Object.keys(unavailable ?? {})).toEqual([
+			"activate",
+		]);
+		await expect(worldAction(context, "activate", "Half")).rejects.toThrow(unavailable?.activate?.en);
+	});
+
+	test("a complete world that is not active, and a row that carries only its id, keep every action", async () => {
+		const { context } = harness(false, "Serverk", {
+			[worldPath("Old", "db")]: "buildings",
+			[worldPath("Old", "fwl")]: "seed",
+		});
+
+		expect(await worlds.unavailable?.(context, await listedRow(context, "Old"))).toEqual({});
+		expect(
+			await worlds.unavailable?.(context, {
+				id: "Old",
+			}),
+		).toEqual({});
 	});
 });
