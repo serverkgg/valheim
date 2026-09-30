@@ -1,13 +1,65 @@
 import { type Bridge, BridgeKind, BridgeUserError } from "@serverkgg/bridge";
+import type { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { playerSummaries, steamWebApiReady } from "@serverkgg/bridge/steam";
-import { platformOf, readPlatformIds, requirePlatformId, steam64Of, writePlatformIds } from "../shared";
+import {
+	displayNameOf,
+	platformOf,
+	readPlatformIds,
+	requirePlatformId,
+	roster,
+	steam64Of,
+	writePlatformIds,
+} from "../shared";
+
+export enum PlatformIdListName {
+	Admins = "admins",
+	Bans = "bans",
+	Permitted = "permitted",
+}
+
+export interface PlatformIdChange {
+	name: BridgeEventName;
+	text: (player: string) => Bridge.Text;
+}
 
 export interface PlatformIdCollectionOptions {
 	path: string;
 	header: string;
+	list: PlatformIdListName;
 	duplicate: Bridge.Text;
 	missing: Bridge.Text;
+	added: PlatformIdChange;
+	removed: PlatformIdChange;
 }
+
+export const playerNameOf = (id: string, fallback?: Bridge.Cell) => {
+	const known = roster.all().find((player) => player.id === id);
+
+	if (known) {
+		return displayNameOf(known);
+	}
+
+	return typeof fallback === "string" && fallback.length > 0 ? fallback : id;
+};
+
+export const platformIdActivity = (
+	options: PlatformIdCollectionOptions,
+	change: PlatformIdChange,
+	player: string,
+	id: string,
+	details: Bridge.Values = {},
+): Bridge.Activity => {
+	return {
+		name: change.name,
+		text: change.text(player),
+		subject: player,
+		details: {
+			...details,
+			list: options.list,
+			platformId: id,
+		},
+	};
+};
 
 const accountsOf = async (context: Bridge.Context, ids: string[]) => {
 	const accounts = new Map<string, string>();
@@ -110,11 +162,14 @@ export const platformIdCollection = (options: PlatformIdCollectionOptions): Brid
 		},
 
 		async add(context, input) {
-			await addPlatformId(context, options, input);
+			const id = await addPlatformId(context, options, input);
 
 			context.log("added a platform id to a list", {
 				list: options.path,
+				platformId: id,
 			});
+
+			context.activity.report(platformIdActivity(options, options.added, playerNameOf(id), id));
 		},
 
 		actions: {
@@ -123,7 +178,12 @@ export const platformIdCollection = (options: PlatformIdCollectionOptions): Brid
 
 				context.log("removed a platform id from a list", {
 					list: options.path,
+					platformId: row.id,
 				});
+
+				context.activity.report(
+					platformIdActivity(options, options.removed, playerNameOf(row.id, row.account), row.id),
+				);
 			},
 		},
 	};

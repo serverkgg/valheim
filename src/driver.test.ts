@@ -267,6 +267,18 @@ describe("declaring the events the platform is allowed to act on", () => {
 	test("announces a steam build change through ServerUpdated", () => {
 		expect(driver.events?.emits).toContain("ServerUpdated");
 	});
+
+	test("keeps ModLoaded for the loader's boot line only, because a catalog install reports ModInstalled", () => {
+		const loaded = driver.events?.patterns.find((pattern) => pattern.emit === "ModLoaded");
+
+		expect(loaded?.match.test("[Info   :   BepInEx] Loading [Jotunn 2.24.3]")).toBe(true);
+		expect(driver.events?.emits).not.toContain("ModLoaded");
+	});
+
+	test("declares the activity names that reach the events ring outside an answer", () => {
+		expect(driver.events?.emits).toContain("GameInstalled");
+		expect(driver.events?.emits).toContain("PlayerUnbanned");
+	});
 });
 
 describe("the manifest and the driver agreeing on the ports", () => {

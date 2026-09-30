@@ -1,18 +1,29 @@
 import { describe, expect, test } from "bun:test";
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
+import { WORLD_NAME_ARGUMENT, worldActions } from "../actions";
 import { SETTINGS_FILE, WORLD_STAGING, worldPath } from "../shared";
 import { worlds } from "./worlds";
+
+const PASSWORD = "hunter2-secret";
 
 const harness = (running: boolean, active: string, seed: Record<string, string> = {}, failMove = false) => {
 	const files = new Map(
 		Object.entries({
 			[SETTINGS_FILE]: JSON.stringify({
 				world: active,
+				password: PASSWORD,
 			}),
 			...seed,
 		}),
 	);
+	const reported: Bridge.Activity[] = [];
 	const context = {
+		activity: {
+			report(entry: Bridge.Activity) {
+				reported.push(entry);
+			},
+		},
 		server: {
 			running,
 		},
@@ -60,6 +71,7 @@ const harness = (running: boolean, active: string, seed: Record<string, string> 
 	return {
 		context,
 		files,
+		reported,
 	};
 };
 
@@ -189,5 +201,95 @@ describe("world files stay safe during panel changes", () => {
 			expect(files.has(path)).toBe(false);
 		}
 		expect(files.get(active)).toBe("current");
+	});
+});
+
+describe("reporting world changes to the activity feed", () => {
+	test("names the uploaded world file", async () => {
+		const source = `${WORLD_STAGING}/Imported.db`;
+		const { context, reported } = harness(false, "Serverk", {
+			[source]: "buildings",
+		});
+
+		await addWorld(context, source);
+
+		expect(reported).toEqual([
+			{
+				name: BridgeEventName.WorldImported,
+				text: {
+					ar: "تم رفع ملف العالم Imported.db",
+					en: "Uploaded the world file Imported.db",
+				},
+				subject: "Imported",
+				details: {
+					world: "Imported",
+					file: "Imported.db",
+				},
+			},
+		]);
+	});
+
+	test("names the world it activated and the one it replaced", async () => {
+		const { context, reported } = harness(false, "Serverk", {
+			[worldPath("Next", "fwl")]: "seed",
+		});
+
+		await worldAction(context, "activate", "Next");
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.WorldActivated,
+		]);
+		expect(reported[0]?.subject).toBe("Next");
+		expect(reported[0]?.details).toEqual({
+			world: "Next",
+			previous: "Serverk",
+		});
+		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
+	});
+
+	test("names the deleted world", async () => {
+		const { context, reported } = harness(false, "Serverk", {
+			[worldPath("Old", "db")]: "old",
+		});
+
+		await worldAction(context, "delete", "Old");
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.WorldDeleted,
+		]);
+		expect(reported[0]?.subject).toBe("Old");
+	});
+
+	test("says a created world is generated at the next start", async () => {
+		const { context, reported } = harness(false, "Serverk");
+		const create = worldActions.actions.create;
+
+		if (!create) {
+			throw new Error("world create missing");
+		}
+
+		await create(context, {
+			[WORLD_NAME_ARGUMENT]: "Fresh",
+		});
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.WorldCreated,
+		]);
+		expect(reported[0]?.subject).toBe("Fresh");
+		expect(reported[0]?.text.en).toContain("next start");
+		expect(reported[0]?.details).toEqual({
+			world: "Fresh",
+			previous: "Serverk",
+		});
+		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
+	});
+
+	test("reports nothing when a change is refused", async () => {
+		const { context, reported } = harness(true, "Serverk", {
+			[worldPath("Old", "db")]: "old",
+		});
+
+		await expect(worldAction(context, "delete", "Old")).rejects.toThrow(BridgeUserError);
+		expect(reported).toEqual([]);
 	});
 });

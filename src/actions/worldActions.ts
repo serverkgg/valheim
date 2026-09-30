@@ -1,4 +1,5 @@
 import { type Bridge, BridgeKind, BridgeUserError } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import {
 	isValidWorldName,
 	mergeSettings,
@@ -32,7 +33,9 @@ export const worldActions: Bridge.Actions = {
 				}
 			}
 
-			if (settingsOf(await readSettings(context)).world === name) {
+			const previous = settingsOf(await readSettings(context)).world;
+
+			if (previous === name) {
 				throw new BridgeUserError({
 					ar: `"${name}" هو العالم الشغّال أصلًا.`,
 					en: `"${name}" is already the active world.`,
@@ -45,6 +48,19 @@ export const worldActions: Bridge.Actions = {
 
 			context.log("queued a new world", {
 				world: name,
+			});
+
+			context.activity.report({
+				name: BridgeEventName.WorldCreated,
+				text: {
+					ar: `تم إنشاء عالم جديد ${name}، ويتولّد مع التشغيل الجاي، وعالم ${previous} يبقى محفوظ`,
+					en: `Created world ${name}, it generates on the next start, and ${previous} stays saved`,
+				},
+				subject: name,
+				details: {
+					world: name,
+					previous,
+				},
 			});
 		},
 	},

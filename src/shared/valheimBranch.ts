@@ -76,6 +76,10 @@ export const PUBLIC_OPTION: Bridge.Option = {
 	latest: true,
 };
 
+export const branchTitleOf = (branch: SteamBranch) => {
+	return branch.description ?? branch.name;
+};
+
 export const branchOption = (branch: SteamBranch): Bridge.Option => {
 	if (branch.name === PUBLIC_BRANCH) {
 		return PUBLIC_OPTION;
@@ -86,8 +90,8 @@ export const branchOption = (branch: SteamBranch): Bridge.Option => {
 	return {
 		value: branch.name,
 		label: {
-			ar: `${branch.description ?? branch.name}${build}`,
-			en: `${branch.description ?? branch.name}${build}`,
+			ar: `${branchTitleOf(branch)}${build}`,
+			en: `${branchTitleOf(branch)}${build}`,
 		},
 		help: {
 			ar: "نسخة قديمة يثبّتها فالهايم على Steam. اللاعبين لازم ينزّلون نفس النسخة عشان يدخلون.",

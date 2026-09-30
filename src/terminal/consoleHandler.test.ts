@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { BANNED_LIST, roster, SETTINGS_FILE } from "../shared";
 import { consoleHandler, findPlayer, parseConsoleLine, rosterLines } from "./consoleHandler";
 
@@ -9,8 +10,15 @@ const BOB = "V_76561198000000002";
 
 const harness = (seed: Record<string, string> = {}) => {
 	const files = new Map(Object.entries(seed));
+	const reported: Bridge.Activity[] = [];
+	const emitted: string[] = [];
 
 	const context = {
+		activity: {
+			report(entry: Bridge.Activity) {
+				reported.push(entry);
+			},
+		},
 		codec: {
 			json: {
 				async read(path: string) {
@@ -18,7 +26,9 @@ const harness = (seed: Record<string, string> = {}) => {
 				},
 			},
 		},
-		emit: () => undefined,
+		emit(event: string) {
+			emitted.push(event);
+		},
 		files: {
 			async exists(path: string) {
 				return files.has(path);
@@ -45,6 +55,8 @@ const harness = (seed: Record<string, string> = {}) => {
 
 	return {
 		context,
+		reported,
+		emitted,
 		file(path: string) {
 			return files.get(path) ?? "";
 		},
@@ -226,6 +238,58 @@ describe("banning from the console", () => {
 		const { context } = harness(settings({}));
 
 		expect(consoleHandler(context, `unban ${ALICE}`)).rejects.toThrow(BridgeUserError);
+	});
+});
+
+describe("reporting console moderation to the activity feed", () => {
+	test("keeps the plain PlayerBanned emit and reports the ban once beside it", async () => {
+		const { context, reported, emitted } = harness(
+			settings({
+				password: "hunter2-secret",
+			}),
+		);
+
+		roster.read(`Got handshake from client "${ALICE}"`);
+		roster.read("Got character ZDOID from Meslzy : 123:1");
+
+		await consoleHandler(context, "ban Meslzy");
+
+		expect(emitted).toEqual([
+			BridgeEventName.PlayerBanned,
+		]);
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.PlayerBanned,
+		]);
+		expect(reported[0]?.subject).toBe("Meslzy");
+		expect(reported[0]?.text.en).toBe("Banned Meslzy");
+		expect(reported[0]?.details).toEqual({
+			list: "bans",
+			platformId: ALICE,
+			player: "Meslzy",
+		});
+		expect(JSON.stringify(reported)).not.toContain("hunter2-secret");
+	});
+
+	test("reports an unban once under PlayerUnbanned with the id", async () => {
+		const { context, reported, emitted } = harness({
+			...settings({
+				password: "hunter2-secret",
+			}),
+			[BANNED_LIST]: `// List banned players ID\n${ALICE}\n`,
+		});
+
+		await consoleHandler(context, `unban ${ALICE}`);
+
+		expect(emitted).toEqual([]);
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.PlayerUnbanned,
+		]);
+		expect(reported[0]?.subject).toBe(ALICE);
+		expect(reported[0]?.details).toMatchObject({
+			list: "bans",
+			platformId: ALICE,
+		});
+		expect(JSON.stringify(reported)).not.toContain("hunter2-secret");
 	});
 });
 

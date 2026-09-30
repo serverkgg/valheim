@@ -1,4 +1,11 @@
-import { type Bridge, BridgeFailureCode, BridgeFailureError, BridgeKind, BridgeUserError } from "@serverkgg/bridge";
+import {
+	type Bridge,
+	BridgeFailureCode,
+	BridgeFailureError,
+	BridgeKind,
+	BridgeUserError,
+	describeDownloadFailure,
+} from "@serverkgg/bridge";
 import {
 	type ThunderstoreCatalog,
 	ThunderstoreSort,
@@ -6,6 +13,7 @@ import {
 	thunderstoreDependency,
 	thunderstoreDownloadUrl,
 } from "@serverkgg/bridge/catalogs";
+import { BRIDGE_ACTIVITY_LIMIT, BridgeEventName } from "@serverkgg/bridge/protocol";
 import { execDetail } from "@serverkgg/bridge/utils";
 import { STAGING_ROOT } from "../shared";
 import { catalogOf, PACK_ID, packInstalled, requirePack } from "./bepinexPack";
@@ -206,7 +214,13 @@ const unpack = async (context: Bridge.Context, id: string, version: Thunderstore
 	try {
 		await context.files.ensure(staging);
 
-		await context.files.download(archive, thunderstoreDownloadUrl(version.full_name));
+		try {
+			await context.files.download(archive, thunderstoreDownloadUrl(version.full_name));
+		} catch (error) {
+			throw new BridgeUserError(describeDownloadFailure(error, titleOf(version)), {
+				cause: error,
+			});
+		}
 
 		await extractMod(context, archive, staging, version);
 
@@ -289,6 +303,44 @@ const entryOf = (id: string, version: ThunderstoreVersion, unpacked: UnpackResul
 		pageUrl: version.website_url,
 		sizeBytes: unpacked.sizeBytes,
 		extras: unpacked.extras,
+	};
+};
+
+const modInstalledActivity = (entry: ModEntry, neededBy: string | null): Bridge.Activity => {
+	return {
+		name: BridgeEventName.ModInstalled,
+		text:
+			neededBy === null
+				? {
+						ar: `تم تثبيت مود ${entry.title} (${entry.version})`,
+						en: `Installed mod ${entry.title} (${entry.version})`,
+					}
+				: {
+						ar: `تم تثبيت مود ${entry.title} (${entry.version})، يحتاجه ${neededBy}`,
+						en: `Installed mod ${entry.title} (${entry.version}), which ${neededBy} needs`,
+					},
+		subject: entry.title,
+		details: {
+			mod: entry.fullName,
+			version: entry.version,
+			dependency: neededBy !== null,
+		},
+	};
+};
+
+const dependenciesActivity = (entry: ModEntry, count: number): Bridge.Activity => {
+	return {
+		name: BridgeEventName.ModInstalled,
+		text: {
+			ar: `تم تثبيت ${count === 1 ? "مود واحد" : count === 2 ? "مودين" : count <= 10 ? `${count} مودات` : `${count} مود`} يحتاجها ${entry.title}`,
+			en: `Installed ${count === 1 ? "1 mod" : `${count} mods`} that ${entry.title} needs`,
+		},
+		subject: entry.title,
+		details: {
+			mod: entry.fullName,
+			dependency: true,
+			count,
+		},
 	};
 };
 
@@ -386,11 +438,15 @@ const installPackage = async (context: Bridge.Context, id: string): Promise<Brid
 	const sidecar = await readSidecar(context);
 	const plan = await dependencyPlan(catalog, version, new Set(Object.keys(sidecar)));
 
+	const itemized = plan.length <= BRIDGE_ACTIVITY_LIMIT;
+
 	let installed: ModEntry | null = null;
+	let dependencies = 0;
 
 	for (const step of plan) {
 		const stepId = modId(step.namespace, step.name);
 		const entry = entryOf(stepId, step, await unpack(context, stepId, step));
+		const dependency = stepId !== id;
 
 		sidecar[stepId] = entry;
 
@@ -398,16 +454,20 @@ const installPackage = async (context: Bridge.Context, id: string): Promise<Brid
 
 		context.log("installed a mod", {
 			mod: entry.fullName,
-			dependency: stepId !== id,
+			dependency,
 		});
 
-		context.emit("ModLoaded", {
-			mod: entry.title,
-			version: entry.version,
-		});
-
-		if (stepId === id) {
+		if (dependency) {
+			dependencies += 1;
+		} else {
 			installed = entry;
+		}
+
+		if (itemized) {
+			context.activity.report(modInstalledActivity(entry, dependency ? titleOf(version) : null));
+		} else if (!dependency) {
+			context.activity.report(dependenciesActivity(entry, dependencies));
+			context.activity.report(modInstalledActivity(entry, null));
 		}
 	}
 
@@ -420,8 +480,9 @@ const installPackage = async (context: Bridge.Context, id: string): Promise<Brid
 
 const removePackage = async (context: Bridge.Context, id: string) => {
 	const sidecar = await readSidecar(context);
+	const entry = sidecar[id];
 
-	if (!sidecar[id]) {
+	if (!entry) {
 		throw new BridgeUserError({
 			ar: `"${id}" مو مركّب.`,
 			en: `"${id}" is not installed.`,
@@ -434,12 +495,46 @@ const removePackage = async (context: Bridge.Context, id: string) => {
 	context.log("removed a mod", {
 		mod: id,
 	});
+
+	context.activity.report({
+		name: BridgeEventName.ModRemoved,
+		text: {
+			ar: `تمت إزالة مود ${entry.title} (${entry.version})`,
+			en: `Removed mod ${entry.title} (${entry.version})`,
+		},
+		subject: entry.title,
+		details: {
+			mod: entry.fullName,
+			version: entry.version,
+		},
+	});
+};
+
+const toggledActivity = (entry: ModEntry, enabled: boolean): Bridge.Activity => {
+	return {
+		name: enabled ? BridgeEventName.ModEnabled : BridgeEventName.ModDisabled,
+		text: enabled
+			? {
+					ar: `تم تفعيل مود ${entry.title}، والتغيير ينطبق مع التشغيل الجاي`,
+					en: `Enabled mod ${entry.title}, takes effect on the next start`,
+				}
+			: {
+					ar: `تم إيقاف مود ${entry.title}، والتغيير ينطبق مع التشغيل الجاي`,
+					en: `Disabled mod ${entry.title}, takes effect on the next start`,
+				},
+		subject: entry.title,
+		details: {
+			mod: entry.fullName,
+			version: entry.version,
+		},
+	};
 };
 
 const togglePackage = async (context: Bridge.Context, id: string, enabled: boolean) => {
 	const sidecar = await readSidecar(context);
+	const entry = sidecar[id];
 
-	if (!sidecar[id]) {
+	if (!entry) {
 		throw new BridgeUserError({
 			ar: `"${id}" مو مركّب.`,
 			en: `"${id}" is not installed.`,
@@ -455,6 +550,8 @@ const togglePackage = async (context: Bridge.Context, id: string, enabled: boole
 			active,
 		]);
 		await context.files.move(parked, active);
+
+		context.activity.report(toggledActivity(entry, true));
 	}
 
 	if (!enabled && (await context.files.exists(active))) {
@@ -463,6 +560,8 @@ const togglePackage = async (context: Bridge.Context, id: string, enabled: boole
 			parked,
 		]);
 		await context.files.move(active, parked);
+
+		context.activity.report(toggledActivity(entry, false));
 	}
 };
 

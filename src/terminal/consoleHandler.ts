@@ -1,7 +1,7 @@
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
 import { readStamp } from "@serverkgg/bridge/install";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
-import { addPlatformId, BANNED_OPTIONS, removePlatformId } from "../collections";
+import { addPlatformId, BANNED_OPTIONS, platformIdActivity, playerNameOf, removePlatformId } from "../collections";
 import type { ValheimStamp } from "../install";
 import { packInstalled, readPackStamp, readSidecar } from "../mods";
 import {
@@ -235,6 +235,14 @@ export const consoleCommands: Record<string, ValheimConsoleCommand> = {
 			),
 		);
 
+		const player = known === null ? id : displayNameOf(known);
+
+		context.activity.report(
+			platformIdActivity(BANNED_OPTIONS, BANNED_OPTIONS.added, player, id, {
+				player,
+			}),
+		);
+
 		return [
 			`banned: ${id}`,
 			"valheim reads the ban list at start, so restart the server to drop them if they are on right now",
@@ -245,6 +253,8 @@ export const consoleCommands: Record<string, ValheimConsoleCommand> = {
 		const id = requirePlatformId(needleOf(line));
 
 		await removePlatformId(context, BANNED_OPTIONS, id);
+
+		context.activity.report(platformIdActivity(BANNED_OPTIONS, BANNED_OPTIONS.removed, playerNameOf(id), id));
 
 		return [
 			`unbanned: ${id}`,

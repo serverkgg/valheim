@@ -34,9 +34,10 @@ export const events: Bridge.Events = {
 		BridgeEventName.ServerStarted,
 		BridgeEventName.ServerStopping,
 		BridgeEventName.ServerUpdated,
+		BridgeEventName.GameInstalled,
 		BridgeEventName.PlayerJoined,
 		BridgeEventName.PlayerLeft,
 		BridgeEventName.PlayerBanned,
-		BridgeEventName.ModLoaded,
+		BridgeEventName.PlayerUnbanned,
 	],
 };

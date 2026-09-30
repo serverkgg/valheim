@@ -1,4 +1,5 @@
 import { type Bridge, BridgeKind, BridgeUserError } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import {
 	discoverWorlds,
 	extensionOf,
@@ -120,9 +121,24 @@ export const worlds: Bridge.Collection = {
 
 		await context.files.move(source, target);
 
+		const file = `${name}.${extension}`;
+
 		context.log("added a world file", {
 			world: name,
-			file: `${name}.${extension}`,
+			file,
+		});
+
+		context.activity.report({
+			name: BridgeEventName.WorldImported,
+			text: {
+				ar: `تم رفع ملف العالم ${file}`,
+				en: `Uploaded the world file ${file}`,
+			},
+			subject: name,
+			details: {
+				world: name,
+				file,
+			},
 		});
 	},
 
@@ -135,7 +151,9 @@ export const worlds: Bridge.Collection = {
 				});
 			}
 
-			if ((await activeWorld(context)) === row.id) {
+			const previous = await activeWorld(context);
+
+			if (previous === row.id) {
 				throw new BridgeUserError({
 					ar: "هذا العالم شغّال أصلًا.",
 					en: "This world is already the active one.",
@@ -148,6 +166,20 @@ export const worlds: Bridge.Collection = {
 
 			context.log("switched the active world", {
 				world: row.id,
+				previous,
+			});
+
+			context.activity.report({
+				name: BridgeEventName.WorldActivated,
+				text: {
+					ar: `تم تفعيل عالم ${row.id} بدل ${previous}، والتغيير ينطبق مع التشغيل الجاي`,
+					en: `Activated world ${row.id} in place of ${previous}, takes effect on the next start`,
+				},
+				subject: row.id,
+				details: {
+					world: row.id,
+					previous,
+				},
 			});
 		},
 
@@ -159,6 +191,18 @@ export const worlds: Bridge.Collection = {
 
 			context.log("deleted a world", {
 				world: row.id,
+			});
+
+			context.activity.report({
+				name: BridgeEventName.WorldDeleted,
+				text: {
+					ar: `تم حذف عالم ${row.id}`,
+					en: `Deleted world ${row.id}`,
+				},
+				subject: row.id,
+				details: {
+					world: row.id,
+				},
 			});
 		},
 	},

@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
+import { type Bridge, BridgeDownloadError, BridgeUserError } from "@serverkgg/bridge";
 import type { ThunderstoreVersion } from "@serverkgg/bridge/catalogs";
+import { BRIDGE_ACTIVITY_LIMIT, BridgeEventName } from "@serverkgg/bridge/protocol";
+import { SETTINGS_FILE } from "../shared";
+import { bepinex } from "./bepinex";
 import { BEPINEX_CORE, DOORSTOP_MARKER, installPack } from "./bepinexPack";
 import { mods } from "./mods";
 import { CONFIG_DIRECTORY, enabledPath, MODS_SIDECAR, PATCHERS_DIRECTORY, parseSidecar } from "./modsSidecar";
@@ -9,7 +12,9 @@ const MOD_ID = "ValheimModding-Jotunn";
 
 const PLUGIN_SIZE = 7168;
 
-const versionOf = (namespace: string, name: string): ThunderstoreVersion => {
+const PASSWORD = "hunter2-secret";
+
+const versionOf = (namespace: string, name: string, dependencies: string[] = []): ThunderstoreVersion => {
 	return {
 		namespace,
 		name,
@@ -17,7 +22,7 @@ const versionOf = (namespace: string, name: string): ThunderstoreVersion => {
 		full_name: `${namespace}-${name}-2.24.3`,
 		description: "",
 		icon: null,
-		dependencies: [],
+		dependencies,
 		download_url: "",
 		downloads: 0,
 		date_created: null,
@@ -30,6 +35,9 @@ interface HarnessOptions {
 	extract: (destination: string, files: Map<string, string>) => void;
 	failCopyInto?: string;
 	failFindIn?: string;
+	failDownload?: Error;
+	failRead?: string;
+	dependencies?: Record<string, string[]>;
 }
 
 const harness = (options: HarnessOptions) => {
@@ -42,8 +50,16 @@ const harness = (options: HarnessOptions) => {
 			BEPINEX_CORE,
 			"dll",
 		],
+		[
+			SETTINGS_FILE,
+			JSON.stringify({
+				password: PASSWORD,
+			}),
+		],
 	]);
 	const directories = new Set<string>();
+	const reported: Bridge.Activity[] = [];
+	const emitted: string[] = [];
 	const listed: string[] = [];
 	const commands: string[][] = [];
 
@@ -106,17 +122,44 @@ const harness = (options: HarnessOptions) => {
 		server: {
 			running: false,
 		},
+		activity: {
+			report(entry: Bridge.Activity) {
+				reported.push(entry);
+			},
+		},
+		codec: {
+			json: {
+				async read(path: string) {
+					return JSON.parse(files.get(path) ?? "{}");
+				},
+				async merge(path: string, values: Bridge.Values) {
+					files.set(
+						path,
+						JSON.stringify({
+							...JSON.parse(files.get(path) ?? "{}"),
+							...values,
+						}),
+					);
+				},
+			},
+		},
 		net: {
 			async json(url: string) {
-				const match = /\/package\/([^/]+)\/([^/]+)\/$/.exec(url);
+				const match = /\/package\/([^/]+)\/([^/]+)\/(?:([^/]+)\/)?$/.exec(url);
 
 				if (!match?.[1] || !match[2]) {
 					throw new Error(`unexpected request ${url}`);
 				}
 
-				return {
-					latest: versionOf(decodeURIComponent(match[1]), decodeURIComponent(match[2])),
-				};
+				const namespace = decodeURIComponent(match[1]);
+				const name = decodeURIComponent(match[2]);
+				const version = versionOf(namespace, name, options.dependencies?.[`${namespace}-${name}`] ?? []);
+
+				return match[3]
+					? version
+					: {
+							latest: version,
+						};
 			},
 		},
 		files: {
@@ -135,12 +178,29 @@ const harness = (options: HarnessOptions) => {
 				}
 			},
 			async read(path: string) {
+				if (options.failRead === path) {
+					throw new Error(`EIO: i/o error, read '${path}'`);
+				}
+
 				return files.get(path) ?? "";
+			},
+			async move(from: string, to: string) {
+				for (const key of under(from)) {
+					files.set(`${to}${key.slice(from.length)}`, files.get(key) ?? "");
+					files.delete(key);
+				}
+
+				directories.delete(from);
+				directories.add(to);
 			},
 			async write(path: string, contents: string) {
 				files.set(path, contents);
 			},
 			async download(path: string) {
+				if (options.failDownload) {
+					throw options.failDownload;
+				}
+
 				files.set(path, "zip");
 			},
 			async extract(_archive: string, destination: string) {
@@ -191,7 +251,9 @@ const harness = (options: HarnessOptions) => {
 			warn: () => undefined,
 			error: () => undefined,
 		}),
-		emit: () => undefined,
+		emit(event: string) {
+			emitted.push(event);
+		},
 	} as unknown as Bridge.Context;
 
 	return {
@@ -199,6 +261,8 @@ const harness = (options: HarnessOptions) => {
 		files,
 		listed,
 		commands,
+		reported,
+		emitted,
 	};
 };
 
@@ -336,9 +400,265 @@ describe("installing the bepinex pack", () => {
 			},
 		});
 
-		await expect(installPack(context)).rejects.toThrow(BridgeUserError);
+		const error = await installPack(context).catch((caught: unknown) => caught);
+
+		expect(error).toBeInstanceOf(BridgeUserError);
+		expect(error instanceof Error && error.cause instanceof Error ? error.cause.message : "").toBe(
+			"archive has a duplicate destination",
+		);
 		expect(stagedPaths(files)).toEqual([]);
 		expect(commands).toEqual([]);
 		expect(files.has("BepInEx/core/partial.dll")).toBe(false);
+	});
+});
+
+const pluginOnly = (destination: string, entries: Map<string, string>) => {
+	entries.set(`${destination}/plugin.dll`, "plugin");
+};
+
+const dependenciesOf = (count: number) => {
+	return Array.from(
+		{
+			length: count,
+		},
+		(_, index) => `Deps-Lib${index}-1.0.0`,
+	);
+};
+
+describe("reporting catalog installs to the activity feed", () => {
+	test("reports ModInstalled with the title and version and never emits ModLoaded", async () => {
+		const { context, reported, emitted } = harness({
+			extract: pluginOnly,
+		});
+
+		await mods.install(context, MOD_ID);
+
+		expect(emitted).toEqual([]);
+		expect(reported).toEqual([
+			{
+				name: BridgeEventName.ModInstalled,
+				text: {
+					ar: "تم تثبيت مود Jotunn (2.24.3)",
+					en: "Installed mod Jotunn (2.24.3)",
+				},
+				subject: "Jotunn",
+				details: {
+					mod: "ValheimModding-Jotunn-2.24.3",
+					version: "2.24.3",
+					dependency: false,
+				},
+			},
+		]);
+		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
+	});
+
+	test("reports every dependency it installed, naming the mod that needs it", async () => {
+		const { context, reported } = harness({
+			extract: pluginOnly,
+			dependencies: {
+				[MOD_ID]: dependenciesOf(2),
+			},
+		});
+
+		await mods.install(context, MOD_ID);
+
+		expect(reported.map((entry) => entry.subject)).toEqual([
+			"Lib0",
+			"Lib1",
+			"Jotunn",
+		]);
+		expect(reported.map((entry) => entry.details?.dependency)).toEqual([
+			true,
+			true,
+			false,
+		]);
+		expect(reported[0]?.text.en).toBe("Installed mod Lib0 (2.24.3), which Jotunn needs");
+	});
+
+	test("summarises the dependencies in one entry when the install goes past the answer limit", async () => {
+		const { context, reported } = harness({
+			extract: pluginOnly,
+			dependencies: {
+				[MOD_ID]: dependenciesOf(BRIDGE_ACTIVITY_LIMIT + 1),
+			},
+		});
+
+		await mods.install(context, MOD_ID);
+
+		expect(reported).toEqual([
+			{
+				name: BridgeEventName.ModInstalled,
+				text: {
+					ar: `تم تثبيت ${BRIDGE_ACTIVITY_LIMIT + 1} مودات يحتاجها Jotunn`,
+					en: `Installed ${BRIDGE_ACTIVITY_LIMIT + 1} mods that Jotunn needs`,
+				},
+				subject: "Jotunn",
+				details: {
+					mod: "ValheimModding-Jotunn-2.24.3",
+					dependency: true,
+					count: BRIDGE_ACTIVITY_LIMIT + 1,
+				},
+			},
+			{
+				name: BridgeEventName.ModInstalled,
+				text: {
+					ar: "تم تثبيت مود Jotunn (2.24.3)",
+					en: "Installed mod Jotunn (2.24.3)",
+				},
+				subject: "Jotunn",
+				details: {
+					mod: "ValheimModding-Jotunn-2.24.3",
+					version: "2.24.3",
+					dependency: false,
+				},
+			},
+		]);
+	});
+
+	test("reports removing, turning off and turning on a mod by its title", async () => {
+		const { context, reported } = harness({
+			extract: pluginOnly,
+		});
+
+		await mods.install(context, MOD_ID);
+		reported.splice(0);
+
+		const toggle = mods.toggle;
+
+		if (!toggle) {
+			throw new Error("the catalog cannot toggle a mod");
+		}
+
+		await toggle(context, MOD_ID, false);
+		await toggle(context, MOD_ID, false);
+		await toggle(context, MOD_ID, true);
+		await mods.remove(context, MOD_ID);
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.ModDisabled,
+			BridgeEventName.ModEnabled,
+			BridgeEventName.ModRemoved,
+		]);
+		expect(reported.map((entry) => entry.subject)).toEqual([
+			"Jotunn",
+			"Jotunn",
+			"Jotunn",
+		]);
+		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
+	});
+
+	test("says why a mod download failed and keeps the raw error as the cause", async () => {
+		const failure = new BridgeDownloadError(404, "thunderstore.io answered 404");
+		const { context, reported } = harness({
+			extract: pluginOnly,
+			failDownload: failure,
+		});
+
+		const error = await mods.install(context, MOD_ID).catch((caught: unknown) => caught);
+
+		expect(error).toBeInstanceOf(BridgeUserError);
+		expect(error instanceof BridgeUserError ? error.text.en : "").toBe(
+			"Jotunn is no longer available from its source.",
+		);
+		expect(error instanceof Error ? error.cause : null).toBe(failure);
+		expect(reported).toEqual([]);
+	});
+});
+
+describe("reporting the bepinex loader to the activity feed", () => {
+	const bepinexAction = async (context: Bridge.Context, action: string) => {
+		const run = bepinex.actions[action];
+
+		if (!run) {
+			throw new Error(`bepinex has no ${action} action`);
+		}
+
+		await run(context, {});
+	};
+
+	test("reports ModLoaderInstalled with the pack version", async () => {
+		const { context, reported } = harness({
+			extract: pluginOnly,
+		});
+
+		await bepinexAction(context, "setup");
+
+		expect(reported).toEqual([
+			{
+				name: BridgeEventName.ModLoaderInstalled,
+				text: {
+					ar: "تم تثبيت BepInEx (2.24.3)",
+					en: "Installed BepInEx (2.24.3)",
+				},
+				subject: "BepInEx",
+				details: {
+					version: "2.24.3",
+				},
+			},
+		]);
+		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
+	});
+
+	test("reports ModLoaderRemoved with how many mods went with it", async () => {
+		const { context, reported } = harness({
+			extract: pluginOnly,
+			dependencies: {
+				[MOD_ID]: dependenciesOf(1),
+			},
+		});
+
+		await bepinexAction(context, "setup");
+		await mods.install(context, MOD_ID);
+		reported.splice(0);
+
+		await bepinexAction(context, "uninstall");
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.ModLoaderRemoved,
+		]);
+		expect(reported[0]?.subject).toBe("BepInEx");
+		expect(reported[0]?.details).toEqual({
+			version: "2.24.3",
+			count: 2,
+		});
+		expect(reported[0]?.text.en).toBe("Removed BepInEx and every mod on it (2)");
+		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
+	});
+
+	test("still removes the loader when the facts for the activity entry cannot be read", async () => {
+		const { context, reported, files } = harness({
+			extract: pluginOnly,
+			failRead: MODS_SIDECAR,
+		});
+
+		files.set(MODS_SIDECAR, "{}");
+
+		await bepinexAction(context, "uninstall");
+
+		expect(files.has(BEPINEX_CORE)).toBe(false);
+		expect(reported.map((entry) => entry.text.en)).toEqual([
+			"Removed BepInEx",
+		]);
+		expect(reported[0]?.details).toEqual({
+			version: null,
+			count: null,
+		});
+	});
+
+	test("says why the pack download failed and keeps the raw error as the cause", async () => {
+		const failure = new BridgeDownloadError(null, "thunderstore.io could not be reached");
+		const { context, reported } = harness({
+			extract: pluginOnly,
+			failDownload: failure,
+		});
+
+		const error = await installPack(context).catch((caught: unknown) => caught);
+
+		expect(error).toBeInstanceOf(BridgeUserError);
+		expect(error instanceof BridgeUserError ? error.text.en : "").toBe(
+			"We could not reach the source to download BepInEx. Try again.",
+		);
+		expect(error instanceof Error ? error.cause : null).toBe(failure);
+		expect(reported).toEqual([]);
 	});
 });
