@@ -1,4 +1,4 @@
-import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
+import { type Bridge, BridgeUserError, describeDownloadFailure } from "@serverkgg/bridge";
 import { thunderstoreCatalog, thunderstoreDownloadUrl } from "@serverkgg/bridge/catalogs";
 import { execDetail } from "@serverkgg/bridge/utils";
 import { STAGING_ROOT } from "../shared";
@@ -35,6 +35,13 @@ export const PACK_PATHS = [
 const PACK_STAGING = `${STAGING_ROOT}/bepinex`;
 
 const PACK_ARCHIVE = `${STAGING_ROOT}/bepinex.zip`;
+
+export const PACK_SUBJECT = "BepInEx";
+
+const UNPACK_FAILED: Bridge.Text = {
+	ar: "ما قدرنا نفك ملفات BepInEx. جرّب مرة ثانية بعد شوي.",
+	en: "We could not unpack BepInEx. Try again in a moment.",
+};
 
 export interface PackStamp {
 	version: string;
@@ -97,7 +104,16 @@ export const installPack = async (context: Bridge.Context): Promise<PackStamp> =
 	await context.files.remove(PACK_STAGING);
 	await context.files.ensure(PACK_STAGING);
 
-	await context.files.download(PACK_ARCHIVE, thunderstoreDownloadUrl(version.full_name));
+	try {
+		await context.files.download(PACK_ARCHIVE, thunderstoreDownloadUrl(version.full_name));
+	} catch (error) {
+		await context.files.remove(PACK_STAGING);
+		await context.files.remove(PACK_ARCHIVE);
+
+		throw new BridgeUserError(describeDownloadFailure(error, PACK_SUBJECT), {
+			cause: error,
+		});
+	}
 
 	try {
 		await context.files.extract(PACK_ARCHIVE, PACK_STAGING, {
@@ -113,9 +129,8 @@ export const installPack = async (context: Bridge.Context): Promise<PackStamp> =
 			reason: error instanceof Error ? error.message : String(error),
 		});
 
-		throw new BridgeUserError({
-			ar: "ما قدرنا نفك ملفات BepInEx. جرّب مرة ثانية بعد شوي.",
-			en: "We could not unpack BepInEx. Try again in a moment.",
+		throw new BridgeUserError(UNPACK_FAILED, {
+			cause: error,
 		});
 	}
 
@@ -127,14 +142,18 @@ export const installPack = async (context: Bridge.Context): Promise<PackStamp> =
 	]);
 
 	if (merged.code !== 0) {
-		throw new Error(`the bepinex pack could not be unpacked — ${execDetail(merged)}`);
+		throw new BridgeUserError(UNPACK_FAILED, {
+			cause: new Error(`the bepinex pack could not be copied into place — ${execDetail(merged)}`),
+		});
 	}
 
 	await context.files.remove(PACK_STAGING);
 	await context.files.remove(PACK_ARCHIVE);
 
 	if (!(await packInstalled(context))) {
-		throw new Error("the bepinex pack unpacked without a doorstop library");
+		throw new BridgeUserError(UNPACK_FAILED, {
+			cause: new Error("the bepinex pack unpacked without a doorstop library"),
+		});
 	}
 
 	const stamp: PackStamp = {
