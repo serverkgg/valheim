@@ -11,14 +11,14 @@ export const ADMIN_OPTIONS: PlatformIdCollectionOptions = {
 		en: "That player is already an admin.",
 	},
 	missing: {
-		ar: "هذا المعرّف مو في قائمة الأدمن.",
-		en: "That ID is not on the admin list.",
+		ar: "هذا المعرّف ليس في قائمة الأدمن.",
+		en: "That ID isn't on the admin list.",
 	},
 	added: {
 		name: BridgeEventName.AccessGranted,
 		text: (player) => {
 			return {
-				ar: `تمت إضافة ${player} لقائمة الأدمن`,
+				ar: `تمت إضافة ${player} إلى قائمة الأدمن`,
 				en: `Added ${player} to the admin list`,
 			};
 		},
@@ -43,8 +43,8 @@ export const BANNED_OPTIONS: PlatformIdCollectionOptions = {
 		en: "That player is already banned.",
 	},
 	missing: {
-		ar: "هذا المعرّف مو في قائمة المحظورين.",
-		en: "That ID is not on the ban list.",
+		ar: "هذا المعرّف ليس في قائمة المحظورين.",
+		en: "That ID isn't on the ban list.",
 	},
 	added: {
 		name: BridgeEventName.PlayerBanned,
@@ -75,14 +75,14 @@ export const PERMITTED_OPTIONS: PlatformIdCollectionOptions = {
 		en: "That player is already on the allow list.",
 	},
 	missing: {
-		ar: "هذا المعرّف مو في القائمة البيضاء.",
-		en: "That ID is not on the allow list.",
+		ar: "هذا المعرّف ليس في القائمة البيضاء.",
+		en: "That ID isn't on the allow list.",
 	},
 	added: {
 		name: BridgeEventName.AccessGranted,
 		text: (player) => {
 			return {
-				ar: `تمت إضافة ${player} للقائمة البيضاء`,
+				ar: `تمت إضافة ${player} إلى القائمة البيضاء`,
 				en: `Added ${player} to the allow list`,
 			};
 		},

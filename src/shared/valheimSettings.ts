@@ -302,7 +302,7 @@ export const mergeSettings = async (context: Bridge.Context, values: Bridge.Valu
 };
 
 export const WORLD_NAME_MESSAGE: Bridge.Text = {
-	ar: "اسم العالم يبدأ بحرف إنجليزي أو رقم، ويقبل الحروف والأرقام والمسافة والشرطة فقط.",
+	ar: "اسم الماب يبدأ بحرف إنجليزي أو رقم، ويقبل الحروف والأرقام والمسافة والشرطة فقط.",
 	en: "A world name starts with a latin letter or digit and takes letters, digits, spaces, dashes and underscores only.",
 };
 
@@ -315,29 +315,29 @@ export const guardSettings = (values: Bridge.Values) => {
 
 	if (settings.password.length < PASSWORD_MIN_LENGTH) {
 		throw new BridgeUserError({
-			ar: `كلمة المرور لازم ${PASSWORD_MIN_LENGTH} حروف على الأقل، فالهايم يرفض يشتغل بأقل من كذا.`,
-			en: `The password needs at least ${PASSWORD_MIN_LENGTH} characters — Valheim refuses to start with a shorter one.`,
+			ar: `يلزم أن تكون كلمة المرور ${PASSWORD_MIN_LENGTH} أحرف على الأقل، فلا يشتغل فالهايم بأقل من ذلك.`,
+			en: `The password needs at least ${PASSWORD_MIN_LENGTH} characters. Valheim refuses to start with a shorter one.`,
 		});
 	}
 
 	if (/\s/.test(settings.password)) {
 		throw new BridgeUserError({
-			ar: "كلمة المرور ما تقبل مسافات.",
-			en: "The password cannot contain spaces.",
+			ar: "لا تقبل كلمة المرور المسافات.",
+			en: "The password can't contain spaces.",
 		});
 	}
 
 	if (passwordInName(settings.name, settings.password)) {
 		throw new BridgeUserError({
-			ar: "كلمة المرور ما تنفع تكون داخل اسم السيرفر — فالهايم يرفض يشتغل كذا. غيّر وحدة منهم.",
-			en: "The password cannot appear inside the server name — Valheim refuses to start. Change one of them.",
+			ar: "لا يمكن أن تكون كلمة المرور داخل اسم السيرفر، فلن يشتغل فالهايم بهذا الشكل. غيّر أحدهما.",
+			en: "The password can't appear inside the server name. Valheim refuses to start. Change one of them.",
 		});
 	}
 
 	if (passwordInName(settings.world, settings.password)) {
 		throw new BridgeUserError({
-			ar: "كلمة المرور ما تنفع تكون داخل اسم العالم — فالهايم يرفض يشتغل كذا. غيّر وحدة منهم.",
-			en: "The password cannot appear inside the world name — Valheim refuses to start. Change one of them.",
+			ar: "لا يمكن أن تكون كلمة المرور داخل اسم الماب، فلن يشتغل فالهايم بهذا الشكل. غيّر أحدهما.",
+			en: "The password can't appear inside the world name. Valheim refuses to start. Change one of them.",
 		});
 	}
 

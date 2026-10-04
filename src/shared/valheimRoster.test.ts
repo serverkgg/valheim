@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { ValheimPlatform } from "./valheimPlatformId";
 import { createRoster, displayNameOf, presenceOf } from "./valheimRoster";
 
@@ -9,7 +9,7 @@ const BOB = "V_76561198000000002";
 const HASH = "a".repeat(40);
 
 describe("following a valheim roster through the log", () => {
-	test("holds a peer out of the name queue until the handshake, which is the line a password gate passes", () => {
+	it("holds a peer out of the name queue until the handshake, which is the line a password gate passes", () => {
 		const roster = createRoster();
 
 		roster.read(`Got connection "${ALICE}"`);
@@ -25,7 +25,7 @@ describe("following a valheim roster through the log", () => {
 		]);
 	});
 
-	test("never lets a wrong-password peer steal the next character name", () => {
+	it("never lets a wrong-password peer steal the next character name", () => {
 		const roster = createRoster();
 
 		roster.read(`Got connection "${ALICE}"`);
@@ -47,7 +47,7 @@ describe("following a valheim roster through the log", () => {
 		]);
 	});
 
-	test("names two players in the order their handshakes arrived", () => {
+	it("names two players in the order their handshakes arrived", () => {
 		const roster = createRoster();
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -72,7 +72,7 @@ describe("following a valheim roster through the log", () => {
 		]);
 	});
 
-	test("never renames a player who is already named when somebody dies", () => {
+	it("never renames a player who is already named when somebody dies", () => {
 		const roster = createRoster();
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -84,7 +84,7 @@ describe("following a valheim roster through the log", () => {
 		]);
 	});
 
-	test("drops a player when the socket closes", () => {
+	it("drops a player when the socket closes", () => {
 		const roster = createRoster();
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -94,7 +94,7 @@ describe("following a valheim roster through the log", () => {
 		expect(roster.all()).toHaveLength(0);
 	});
 
-	test("ignores a second connection from a player who is already on", () => {
+	it("ignores a second connection from a player who is already on", () => {
 		const roster = createRoster();
 
 		roster.read(`Got connection "${ALICE}"`);
@@ -104,7 +104,7 @@ describe("following a valheim roster through the log", () => {
 		expect(roster.all()).toHaveLength(1);
 	});
 
-	test("names the platform behind every peer it sees", () => {
+	it("names the platform behind every peer it sees", () => {
 		const roster = createRoster();
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -116,7 +116,7 @@ describe("following a valheim roster through the log", () => {
 		]);
 	});
 
-	test("keeps the newest crossplay session it saw", () => {
+	it("keeps the newest crossplay session it saw", () => {
 		const roster = createRoster();
 
 		roster.read('Session "Serverk" with join code 111111 and IP 1.2.3.4:2456 is active with 0 player(s)');
@@ -125,7 +125,7 @@ describe("following a valheim roster through the log", () => {
 		expect(roster.session()?.joinCode).toBe("222222");
 	});
 
-	test("counts crossplay peers off the session lines, because playfab gives no id", () => {
+	it("counts crossplay peers off the session lines, because playfab gives no id", () => {
 		const roster = createRoster();
 
 		expect(roster.count()).toBeNull();
@@ -139,7 +139,7 @@ describe("following a valheim roster through the log", () => {
 		expect(roster.count()).toBe(1);
 	});
 
-	test("clears everything when the server restarts", () => {
+	it("clears everything when the server restarts", () => {
 		const roster = createRoster();
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -153,7 +153,7 @@ describe("following a valheim roster through the log", () => {
 });
 
 describe("describing a roster from the steam web api", () => {
-	test("puts the avatar hash and the account name on the peer they belong to", () => {
+	it("puts the avatar hash and the account name on the peer they belong to", () => {
 		const roster = createRoster();
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -180,7 +180,7 @@ describe("describing a roster from the steam web api", () => {
 });
 
 describe("turning a roster row into a presence payload", () => {
-	test("sends the character, the platform id, the account and the avatar", () => {
+	it("sends the character, the platform id, the account and the avatar", () => {
 		expect(
 			presenceOf({
 				account: "meslzy",
@@ -198,7 +198,7 @@ describe("turning a roster row into a presence payload", () => {
 		});
 	});
 
-	test("falls back from the character to the account and then to the id", () => {
+	it("falls back from the character to the account and then to the id", () => {
 		expect(
 			displayNameOf({
 				account: "meslzy",
@@ -226,7 +226,7 @@ describe("turning a roster row into a presence payload", () => {
 });
 
 describe("crossplay counts across overlapping disconnect logs", () => {
-	test("rejected unknown peers do not subtract connected players", () => {
+	it("rejected unknown peers do not subtract connected players", () => {
 		const roster = createRoster();
 		roster.observeCount(3);
 		roster.read(`Peer "${ALICE}" has wrong password`);
@@ -234,7 +234,7 @@ describe("crossplay counts across overlapping disconnect logs", () => {
 		expect(roster.count()).toBe(3);
 	});
 
-	test("the socket and PlayFab leave for one player count only once", () => {
+	it("the socket and PlayFab leave for one player count only once", () => {
 		const roster = createRoster();
 		roster.handshake(ALICE);
 		roster.observeCount(3);

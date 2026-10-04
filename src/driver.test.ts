@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import {
 	type BridgeDriver,
 	BridgeFormTarget,
@@ -119,7 +119,7 @@ const formSection = (tabId: string, sectionId: string) => {
 };
 
 describe("assembling the valheim driver", () => {
-	test(
+	it(
 		"passes the same validation the platform runs at boot",
 		async () => {
 			const validate = Bun.spawn(
@@ -140,7 +140,7 @@ describe("assembling the valheim driver", () => {
 		VALIDATE_TIMEOUT_MS,
 	);
 
-	test("builds a panel the agent's own wire schema accepts, which validate does not check", () => {
+	it("builds a panel the agent's own wire schema accepts, which validate does not check", () => {
 		const parsed = bridgePanelSchema.safeParse(driver.panel);
 
 		expect(
@@ -149,7 +149,7 @@ describe("assembling the valheim driver", () => {
 		).toBeNull();
 	});
 
-	test("builds a terminal manifest the wire schema accepts", () => {
+	it("builds a terminal manifest the wire schema accepts", () => {
 		const parsed = bridgeTerminalManifestSchema.safeParse({
 			commands: driver.terminal?.commands ?? [],
 			rules: (driver.terminal?.rules ?? []).map((rule) => {
@@ -169,7 +169,7 @@ describe("assembling the valheim driver", () => {
 		expect(parsed.success ? null : parsed.error.issues, "the terminal manifest crosses the same wire").toBeNull();
 	});
 
-	test("builds a setup manifest the wire schema accepts", () => {
+	it("builds a setup manifest the wire schema accepts", () => {
 		const parsed = bridgeSetupManifestSchema.safeParse({
 			steps: driver.setup?.steps ?? [],
 		});
@@ -177,7 +177,7 @@ describe("assembling the valheim driver", () => {
 		expect(parsed.success ? null : parsed.error.issues, "the setup manifest crosses the same wire").toBeNull();
 	});
 
-	test("declares every capability the panel and the platform depend on", () => {
+	it("declares every capability the panel and the platform depend on", () => {
 		expect(driver.install).toBeDefined();
 		expect(driver.lifecycle).toBeDefined();
 		expect(driver.events).toBeDefined();
@@ -187,17 +187,17 @@ describe("assembling the valheim driver", () => {
 		expect(driver.panel).toBeDefined();
 	});
 
-	test("declares no announce, because a valheim server has no way to speak to players", () => {
+	it("declares no announce, because a valheim server has no way to speak to players", () => {
 		expect(driver.announce).toBeUndefined();
 	});
 
-	test("answers its console commands in the driver, because valheim reads nothing from stdin", () => {
+	it("answers its console commands in the driver, because valheim reads nothing from stdin", () => {
 		expect(driver.terminal?.run).toBeDefined();
 		expect((driver.terminal?.commands ?? []).length).toBeGreaterThan(0);
 		expect(driver.terminal?.rules?.length).toBeGreaterThan(0);
 	});
 
-	test("offers a safe command the game smoke can run with no argument and no danger", () => {
+	it("offers a safe command the game smoke can run with no argument and no danger", () => {
 		const safe = (driver.terminal?.commands ?? []).find((command) => {
 			return command.danger !== true && (command.args ?? []).length === 0;
 		});
@@ -205,7 +205,7 @@ describe("assembling the valheim driver", () => {
 		expect(safe?.name).toBe("status");
 	});
 
-	test("names an argument after the module and column the panel can fill it from", () => {
+	it("names an argument after the module and column the panel can fill it from", () => {
 		const ban = (driver.terminal?.commands ?? []).find((command) => command.name === "ban");
 		const target = (ban?.args ?? []).at(0);
 
@@ -215,7 +215,7 @@ describe("assembling the valheim driver", () => {
 		expect(target?.column).toBe("name");
 	});
 
-	test("declares the steam web api key as an optional platform secret, because the lists read names from it", () => {
+	it("declares the steam web api key as an optional platform secret, because the lists read names from it", () => {
 		const secret = (manifest.secrets ?? []).find((entry) => entry.key === "STEAM_WEB_API_KEY");
 
 		expect(secret?.required).toBe(false);
@@ -223,7 +223,7 @@ describe("assembling the valheim driver", () => {
 		expect(secret?.description.en.length).toBeGreaterThan(0);
 	});
 
-	test("registers every module the panel binds a section to", () => {
+	it("registers every module the panel binds a section to", () => {
 		for (const section of sections) {
 			if (section.layout !== BridgeLayout.Form || section.module !== undefined) {
 				expect(Object.keys(modules)).toContain(section.module ?? "");
@@ -231,13 +231,13 @@ describe("assembling the valheim driver", () => {
 		}
 	});
 
-	test("keeps the setup singleton out of the panel modules, because its id is reserved", () => {
+	it("keeps the setup singleton out of the panel modules, because its id is reserved", () => {
 		expect(Object.keys(modules)).not.toContain("setup");
 	});
 });
 
 describe("declaring the events the platform is allowed to act on", () => {
-	test("names only events the platform's taxonomy knows, so none are dropped", () => {
+	it("names only events the platform's taxonomy knows, so none are dropped", () => {
 		for (const name of [
 			...(driver.events?.patterns ?? []).map((pattern) => pattern.emit),
 			...(driver.events?.emits ?? []),
@@ -246,69 +246,69 @@ describe("declaring the events the platform is allowed to act on", () => {
 		}
 	});
 
-	test("raises join and leave from code, because valheim spreads them over two log lines", () => {
+	it("raises join and leave from code, because valheim spreads them over two log lines", () => {
 		expect(driver.events?.emits).toContain("PlayerJoined");
 		expect(driver.events?.emits).toContain("PlayerLeft");
 	});
 
-	test("matches the save line valheim prints, which is the only save signal it gives", () => {
+	it("matches the save line valheim prints, which is the only save signal it gives", () => {
 		const saved = driver.events?.patterns.find((pattern) => pattern.emit === "WorldSaved");
 
 		expect(saved).toBeDefined();
 		expect(saved?.match.test("World saved ( 1234.5ms )")).toBe(true);
 	});
 
-	test("matches a crash so the feed says the server died rather than stopped", () => {
+	it("matches a crash so the feed says the server died rather than stopped", () => {
 		const crashed = driver.events?.patterns.find((pattern) => pattern.emit === "ServerCrashed");
 
 		expect(crashed?.match.test("Unhandled Exception: System.NullReferenceException")).toBe(true);
 	});
 
-	test("announces a steam build change through ServerUpdated", () => {
+	it("announces a steam build change through ServerUpdated", () => {
 		expect(driver.events?.emits).toContain("ServerUpdated");
 	});
 
-	test("keeps ModLoaded for the loader's boot line only, because a catalog install reports ModInstalled", () => {
+	it("keeps ModLoaded for the loader's boot line only, because a catalog install reports ModInstalled", () => {
 		const loaded = driver.events?.patterns.find((pattern) => pattern.emit === "ModLoaded");
 
 		expect(loaded?.match.test("[Info   :   BepInEx] Loading [Jotunn 2.24.3]")).toBe(true);
 		expect(driver.events?.emits).not.toContain("ModLoaded");
 	});
 
-	test("declares the activity names that reach the events ring outside an answer", () => {
+	it("declares the activity names that reach the events ring outside an answer", () => {
 		expect(driver.events?.emits).toContain("GameInstalled");
 		expect(driver.events?.emits).toContain("PlayerUnbanned");
 	});
 });
 
 describe("the manifest and the driver agreeing on the ports", () => {
-	test("declares the game port and the query port valheim derives from it", () => {
+	it("declares the game port and the query port valheim derives from it", () => {
 		expect(manifest.container.ports.map((port) => port.key)).toEqual([
 			"game",
 			"query",
 		]);
 	});
 
-	test("publishes both over udp, which is all valheim speaks", () => {
+	it("publishes both over udp, which is all valheim speaks", () => {
 		for (const port of manifest.container.ports) {
 			expect(port.protocol).toBe("udp");
 		}
 	});
 
-	test("mirrors both, because valheim advertises the port it bound to the steam master server", () => {
+	it("mirrors both, because valheim advertises the port it bound to the steam master server", () => {
 		for (const port of manifest.container.ports) {
 			expect(port.mirror).toBe(true);
 		}
 	});
 
-	test("follows the game port by one, which is the only query port valheim will ever use", () => {
+	it("follows the game port by one, which is the only query port valheim will ever use", () => {
 		expect(portOf("query")?.follows).toEqual({
 			key: "game",
 			offset: 1,
 		});
 	});
 
-	test("shifts the follower's host range by the same offset, so an allocation never falls outside it", () => {
+	it("shifts the follower's host range by the same offset, so an allocation never falls outside it", () => {
 		const game = portOf("game");
 		const query = portOf("query");
 
@@ -317,13 +317,13 @@ describe("the manifest and the driver agreeing on the ports", () => {
 		expect(query?.hostRange.default).toBe((game?.hostRange.default ?? 0) + 1);
 	});
 
-	test("runs a linux payload, so the manifest declares no wine runtime", () => {
+	it("runs a linux payload, so the manifest declares no wine runtime", () => {
 		expect(manifest.container.runtime.platform).toBe("linux");
 	});
 });
 
 describe("the manifest guarding the files the driver depends on", () => {
-	test("protects the steam install the driver would otherwise redownload", () => {
+	it("protects the steam install the driver would otherwise redownload", () => {
 		for (const path of [
 			".steamcmd",
 			"steamapps",
@@ -333,7 +333,7 @@ describe("the manifest guarding the files the driver depends on", () => {
 		}
 	});
 
-	test("keeps the steam install through a reset, so a reset never re-downloads the game", () => {
+	it("keeps the steam install through a reset, so a reset never re-downloads the game", () => {
 		for (const path of [
 			".steamcmd",
 			"steamapps",
@@ -343,12 +343,12 @@ describe("the manifest guarding the files the driver depends on", () => {
 		}
 	});
 
-	test("throws away bepinex and every mod on a reset, so a reset really is a clean server", () => {
+	it("throws away bepinex and every mod on a reset, so a reset really is a clean server", () => {
 		expect(manifest.reset.keep).not.toContain("BepInEx");
 		expect(manifest.reset.keep).not.toContain("doorstop_libs");
 	});
 
-	test("archives saves, settings and the exact mod runtime needed to restore them", () => {
+	it("archives saves, settings and the exact mod runtime needed to restore them", () => {
 		expect(manifest.backup.only).toEqual([
 			`${SAVE_DIRECTORY}/**`,
 			SETTINGS_FILE,
@@ -364,12 +364,12 @@ describe("the manifest guarding the files the driver depends on", () => {
 		]);
 	});
 
-	test("leaves valheim's half-written save files out of the archive", () => {
+	it("leaves valheim's half-written save files out of the archive", () => {
 		expect(manifest.backup.except).toContain(`${SAVE_DIRECTORY}/**/*.db.new`);
 		expect(manifest.backup.except).toContain(`${SAVE_DIRECTORY}/**/*.fwl.new`);
 	});
 
-	test("annotates every file a player might open, starting with the settings the driver owns", () => {
+	it("annotates every file a player might open, starting with the settings the driver owns", () => {
 		const notable = manifest.files.notable.map((note) => note.match);
 
 		expect(notable).toContain(SETTINGS_FILE);
@@ -381,7 +381,7 @@ describe("the manifest guarding the files the driver depends on", () => {
 });
 
 describe("the manifest presence matching what the roster actually sends", () => {
-	test("names the payload keys the query module emits", () => {
+	it("names the payload keys the query module emits", () => {
 		expect(manifest.presence.name).toBe("player");
 		expect(manifest.presence.id).toBe("platformId");
 		expect(manifest.presence.fields.map((field) => field.key)).toEqual([
@@ -390,7 +390,7 @@ describe("the manifest presence matching what the roster actually sends", () => 
 		]);
 	});
 
-	test("builds the avatar from the hash the steam web api gives us", () => {
+	it("builds the avatar from the hash the steam web api gives us", () => {
 		expect(manifest.presence.avatar).toContain("{avatarHash}");
 	});
 });
@@ -408,13 +408,13 @@ const fieldKeys = sections.flatMap((section) => {
 });
 
 describe("keeping every panel key inside what the wire protocol accepts", () => {
-	test("names no field with a character the agent's manifest schema rejects", () => {
+	it("names no field with a character the agent's manifest schema rejects", () => {
 		for (const key of fieldKeys) {
 			expect(key).toMatch(PANEL_KEY_PATTERN);
 		}
 	});
 
-	test("names no table column the wire would reject either", () => {
+	it("names no table column the wire would reject either", () => {
 		for (const table of tables) {
 			for (const column of table.columns) {
 				expect(column.key).toMatch(PANEL_KEY_PATTERN);
@@ -422,13 +422,13 @@ describe("keeping every panel key inside what the wire protocol accepts", () => 
 		}
 	});
 
-	test("puts every setting the driver reads in front of the owner", () => {
+	it("puts every setting the driver reads in front of the owner", () => {
 		for (const field of SETTING_FIELDS) {
 			expect(fieldKeys).toContain(field);
 		}
 	});
 
-	test("offers the branch as a variable, because it decides what gets installed", () => {
+	it("offers the branch as a variable, because it decides what gets installed", () => {
 		const branch = forms.find((form) => form.fields.some((field) => field.key === BRANCH_VARIABLE));
 
 		expect(branch?.target).toBe(BridgeFormTarget.Variables);
@@ -436,7 +436,7 @@ describe("keeping every panel key inside what the wire protocol accepts", () => 
 		expect(branch?.confirmText).toBeDefined();
 	});
 
-	test("fills the branch list from a module, so it follows what steam publishes", () => {
+	it("fills the branch list from a module, so it follows what steam publishes", () => {
 		const field = forms.flatMap((form) => form.fields).find((entry) => entry.key === BRANCH_VARIABLE);
 
 		expect(field?.options).toEqual({
@@ -444,7 +444,7 @@ describe("keeping every panel key inside what the wire protocol accepts", () => 
 		});
 	});
 
-	test("hints a restart on every settings form, because valheim only reads argv at start", () => {
+	it("hints a restart on every settings form, because valheim only reads argv at start", () => {
 		for (const form of forms) {
 			if (form.target === BridgeFormTarget.Settings) {
 				expect(form.restartHint).toBe(true);
@@ -454,14 +454,14 @@ describe("keeping every panel key inside what the wire protocol accepts", () => 
 });
 
 describe("the worlds table doing what a save file needs", () => {
-	test("uploads the db and the fwl one file at a time, because a world is a pair", () => {
+	it("uploads the db and the fwl one file at a time, because a world is a pair", () => {
 		const saves = tables.find((table) => table.module === "worlds");
 
 		expect(saves?.upload?.extensions).toEqual(WORLD_EXTENSIONS);
 		expect(saves?.upload?.mode).toBe(BridgeUploadMode.File);
 	});
 
-	test("offers activate and delete, which is every world action valheim allows offline", () => {
+	it("offers activate and delete, which is every world action valheim allows offline", () => {
 		const saves = tables.find((table) => table.module === "worlds");
 
 		expect((saves?.actions ?? []).map((action) => action.id)).toEqual([
@@ -472,13 +472,13 @@ describe("the worlds table doing what a save file needs", () => {
 });
 
 describe("the players page carrying every list valheim reads", () => {
-	test("binds one table to each list file", () => {
+	it("binds one table to each list file", () => {
 		expect(tables.map((table) => table.module)).toContain("admins");
 		expect(tables.map((table) => table.module)).toContain("bans");
 		expect(tables.map((table) => table.module)).toContain("permitted");
 	});
 
-	test("lets an owner add an id to every one of them", () => {
+	it("lets an owner add an id to every one of them", () => {
 		for (const module of [
 			"admins",
 			"bans",
@@ -488,7 +488,7 @@ describe("the players page carrying every list valheim reads", () => {
 		}
 	});
 
-	test("puts the roster and every moderation table on the platform's own players page", () => {
+	it("puts the roster and every moderation table on the platform's own players page", () => {
 		for (const module of [
 			"players",
 			"admins",
@@ -499,7 +499,7 @@ describe("the players page carrying every list valheim reads", () => {
 		}
 	});
 
-	test("shows the account, the platform and the id the panel bans by", () => {
+	it("shows the account, the platform and the id the panel bans by", () => {
 		const online = tables.find((table) => table.module === "players");
 
 		expect((online?.columns ?? []).map((column) => column.key)).toEqual([
@@ -510,7 +510,7 @@ describe("the players page carrying every list valheim reads", () => {
 		]);
 	});
 
-	test("claims offline on ban, because a ban is written to a file the game reads at start", () => {
+	it("claims offline on ban, because a ban is written to a file the game reads at start", () => {
 		const ban = (tables.find((table) => table.module === "players")?.actions ?? []).find(
 			(action) => action.id === "ban",
 		);
@@ -518,7 +518,7 @@ describe("the players page carrying every list valheim reads", () => {
 		expect(ban?.offline).toBe(true);
 	});
 
-	test("takes the name of no platform sidebar entry, now that the lists moved onto the players page", () => {
+	it("takes the name of no platform sidebar entry, now that the lists moved onto the players page", () => {
 		for (const tab of tabs) {
 			expect([
 				"overview",
@@ -537,7 +537,7 @@ describe("the players page carrying every list valheim reads", () => {
 		}
 	});
 
-	test("leaves the sidebar entirely, because every section of the players tab is placed", () => {
+	it("leaves the sidebar entirely, because every section of the players tab is placed", () => {
 		const players = tabs.find((tab) => tab.id === "players");
 
 		for (const section of players?.sections ?? []) {
@@ -547,13 +547,13 @@ describe("the players page carrying every list valheim reads", () => {
 });
 
 describe("the server health detail the overview renders", () => {
-	test("places the metrics detail on the overview rather than on a tab of its own", () => {
+	it("places the metrics detail on the overview rather than on a tab of its own", () => {
 		const metrics = sections.find((section) => section.layout === BridgeLayout.Detail && section.module === "metrics");
 
 		expect(metrics?.layout === BridgeLayout.Detail && metrics.place).toBe(BridgePlace.Overview);
 	});
 
-	test("keeps a way back to the settings that decide what it shows", () => {
+	it("keeps a way back to the settings that decide what it shows", () => {
 		const metrics = sections.find((section) => section.layout === BridgeLayout.Detail && section.module === "metrics");
 
 		expect(metrics?.layout === BridgeLayout.Detail && metrics.related?.tab).toBe("settings");
@@ -561,14 +561,14 @@ describe("the server health detail the overview renders", () => {
 });
 
 describe("explaining every section the owner opens", () => {
-	test("writes one help line in both languages on every form", () => {
+	it("writes one help line in both languages on every form", () => {
 		for (const form of forms) {
 			expect(form.help?.ar.length, `${form.id} has no arabic help`).toBeGreaterThan(0);
 			expect(form.help?.en.length, `${form.id} has no english help`).toBeGreaterThan(0);
 		}
 	});
 
-	test("writes one on every table too, because a list of ids explains nothing by itself", () => {
+	it("writes one on every table too, because a list of ids explains nothing by itself", () => {
 		for (const table of tables) {
 			expect(table.help?.ar.length, `${table.id} has no arabic help`).toBeGreaterThan(0);
 			expect(table.help?.en.length, `${table.id} has no english help`).toBeGreaterThan(0);
@@ -630,7 +630,7 @@ const protectedActionsOf = (module: PanelModule) => {
 };
 
 describe("taking a recovery copy only before an action destroys something nothing else brings back", () => {
-	test("protects deleting a world and removing the loader, and nothing else", () => {
+	it("protects deleting a world and removing the loader, and nothing else", () => {
 		const declared = Object.fromEntries(
 			Object.entries(modules).flatMap(([id, module]) => {
 				const actions = protectedActionsOf(module);
@@ -656,7 +656,7 @@ describe("taking a recovery copy only before an action destroys something nothin
 		});
 	});
 
-	test("protects only mutations the module declares, on modules that work while the game is stopped", () => {
+	it("protects only mutations the module declares, on modules that work while the game is stopped", () => {
 		for (const [id, module] of Object.entries(modules)) {
 			const actions = protectedActionsOf(module);
 
@@ -672,7 +672,7 @@ describe("taking a recovery copy only before an action destroys something nothin
 		}
 	});
 
-	test("leaves settings writes and the steam id lists unprotected, because a restart alone applies them", () => {
+	it("leaves settings writes and the steam id lists unprotected, because a restart alone applies them", () => {
 		for (const id of [
 			"settings",
 			"admins",
@@ -685,7 +685,7 @@ describe("taking a recovery copy only before an action destroys something nothin
 		}
 	});
 
-	test("leaves uploading, switching and creating a world unprotected, because none of them destroys a world", () => {
+	it("leaves uploading, switching and creating a world unprotected, because none of them destroys a world", () => {
 		const worldsModule = modules.worlds;
 		const worldActionsModule = modules.worldActions;
 
@@ -701,7 +701,7 @@ describe("taking a recovery copy only before an action destroys something nothin
 		expect(worldActionsModule === undefined ? [] : protectedActionsOf(worldActionsModule)).toEqual([]);
 	});
 
-	test("leaves the mod catalog and the loader setup unprotected, because installing is additive and reversible", () => {
+	it("leaves the mod catalog and the loader setup unprotected, because installing is additive and reversible", () => {
 		const modsModule = modules.mods;
 		const bepinexModule = modules.bepinex;
 
@@ -712,7 +712,7 @@ describe("taking a recovery copy only before an action destroys something nothin
 });
 
 describe("the mods tab", () => {
-	test("shows the loader before the catalog, because nothing installs without it", () => {
+	it("shows the loader before the catalog, because nothing installs without it", () => {
 		const mods = tabs.find((tab) => tab.id === "mods");
 
 		expect((mods?.sections ?? []).map((section) => section.module)).toEqual([
@@ -723,7 +723,7 @@ describe("the mods tab", () => {
 		]);
 	});
 
-	test("keeps the bepinex switch on the settings form the start command reads", () => {
+	it("keeps the bepinex switch on the settings form the start command reads", () => {
 		const loading = formSection("mods", "loading");
 
 		expect(loading?.target).toBe(BridgeFormTarget.Settings);
@@ -732,7 +732,7 @@ describe("the mods tab", () => {
 		]);
 	});
 
-	test("installs the loader through its own action rather than through the catalog", () => {
+	it("installs the loader through its own action rather than through the catalog", () => {
 		expect(PACK_ID).toBe("denikson-BepInExPack_Valheim");
 	});
 });
@@ -740,7 +740,7 @@ describe("the mods tab", () => {
 const steps = driver.setup?.steps ?? [];
 
 describe("walking the customer through the first run", () => {
-	test("names the server, settles how people reach it, then points at mods and the address", () => {
+	it("names the server, settles how people reach it, then points at mods and the address", () => {
 		expect(steps.map((step) => step.id)).toEqual([
 			"name",
 			"world",
@@ -749,16 +749,16 @@ describe("walking the customer through the first run", () => {
 		]);
 	});
 
-	test("blocks nothing, because a fresh valheim server already runs", () => {
+	it("blocks nothing, because a fresh valheim server already runs", () => {
 		expect(steps.filter((step) => step.required !== false)).toEqual([]);
 	});
 
-	test("needs no driver step, so the setup declares no submit", () => {
+	it("needs no driver step, so the setup declares no submit", () => {
 		expect(steps.filter((step) => step.kind === BridgeSetupStepKind.Driver)).toEqual([]);
 		expect(driver.setup?.submit).toBeUndefined();
 	});
 
-	test("points every form step at a form section the panel really declares", () => {
+	it("points every form step at a form section the panel really declares", () => {
 		for (const step of steps) {
 			if (step.kind !== BridgeSetupStepKind.Form) {
 				continue;
@@ -774,13 +774,13 @@ describe("walking the customer through the first run", () => {
 		}
 	});
 
-	test("sends the invite step to the access page, where the address lives", () => {
+	it("sends the invite step to the access page, where the address lives", () => {
 		const invite = steps.find((step) => step.id === "invite");
 
 		expect(invite?.kind === BridgeSetupStepKind.Open && invite.target.tab).toBe(GuideOpenTab.Access);
 	});
 
-	test("titles and explains every step in both arabic and english", () => {
+	it("titles and explains every step in both arabic and english", () => {
 		for (const step of steps) {
 			expect(step.title.ar.length).toBeGreaterThan(0);
 			expect(step.title.en.length).toBeGreaterThan(0);

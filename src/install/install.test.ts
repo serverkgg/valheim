@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
@@ -160,7 +160,7 @@ const harness = (options: HarnessOptions) => {
 };
 
 describe("reporting installs and updates to the activity feed", () => {
-	test("reports GameInstalled with the build and the branch label the panel shows", async () => {
+	it("reports GameInstalled with the build and the branch label the panel shows", async () => {
 		const { context, reported } = harness({
 			build: "20001",
 		});
@@ -186,7 +186,7 @@ describe("reporting installs and updates to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("keeps the plain ServerUpdated emit and reports the build change once beside it", async () => {
+	it("keeps the plain ServerUpdated emit and reports the build change once beside it", async () => {
 		const { context, reported, emitted } = harness({
 			build: "20002",
 			installed: true,
@@ -217,7 +217,7 @@ describe("reporting installs and updates to the activity feed", () => {
 		]);
 	});
 
-	test("names both steam branches by the labels the panel shows for them", async () => {
+	it("names both steam branches by the labels the panel shows for them", async () => {
 		const { context, reported, emitted } = harness({
 			build: "30001",
 			branch: "default_preml",
@@ -262,7 +262,7 @@ describe("reporting installs and updates to the activity feed", () => {
 		]);
 	});
 
-	test("falls back to the branch name and still finishes the install when steam cannot list the branches", async () => {
+	it("falls back to the branch name and still finishes the install when steam cannot list the branches", async () => {
 		const { context, reported, warnings } = harness({
 			build: "30001",
 			branch: "default_preml",
@@ -284,7 +284,7 @@ describe("reporting installs and updates to the activity feed", () => {
 		]);
 	});
 
-	test("reports nothing when the install stamp cannot be written, so the row never claims a change that repeats", async () => {
+	it("reports nothing when the install stamp cannot be written, so the row never claims a change that repeats", async () => {
 		const { context, reported, emitted } = harness({
 			build: "20002",
 			installed: true,
@@ -302,7 +302,7 @@ describe("reporting installs and updates to the activity feed", () => {
 		expect(reported).toEqual([]);
 	});
 
-	test("reports nothing when the build did not move", async () => {
+	it("reports nothing when the build did not move", async () => {
 		const { context, reported, emitted } = harness({
 			build: "20001",
 			installed: true,
@@ -318,7 +318,7 @@ describe("reporting installs and updates to the activity feed", () => {
 		expect(reported).toEqual([]);
 	});
 
-	test("tells the owner to retry when steam finished without the game files, keeping the detail as the cause", async () => {
+	it("tells the owner to retry when steam finished without the game files, keeping the detail as the cause", async () => {
 		const { context, reported } = harness({
 			build: "20001",
 			delivers: false,

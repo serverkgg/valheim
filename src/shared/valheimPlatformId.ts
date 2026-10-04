@@ -141,8 +141,8 @@ export const requirePlatformId = (input: string) => {
 
 	if (parsed === null) {
 		throw new BridgeUserError({
-			ar: `هذا مو معرّف لاعب. فالهايم يبي Platform User ID — للي على Steam يكون ${STEAM_PLATFORM_PREFIX} ومعه رقم Steam64، ولو كتبت رقم Steam لحاله نحطه لك بالبادئة.`,
-			en: `That is not a player id. Valheim wants a Platform User ID — on Steam that is ${STEAM_PLATFORM_PREFIX} followed by the Steam64 id, and a bare Steam number gets the prefix added for you.`,
+			ar: `هذا ليس معرّف لاعب. يتطلب فالهايم Platform User ID، ويتكوّن للاعبي Steam من البادئة ${STEAM_PLATFORM_PREFIX} ثم رقم Steam64. وإذا كتبت رقم Steam وحده نضيف له البادئة.`,
+			en: `That isn't a player ID. Valheim wants a Platform User ID. On Steam that's ${STEAM_PLATFORM_PREFIX} followed by the Steam64 ID, and a bare Steam number gets the prefix added for you.`,
 		});
 	}
 

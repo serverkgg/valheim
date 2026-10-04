@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { branchOption, parseBranches } from "./valheimBranch";
 
 const response = {
@@ -26,32 +26,32 @@ const response = {
 };
 
 describe("reading the branches steam publishes for the valheim server", () => {
-	test("lists the public branch first, because it is the one almost everybody wants", () => {
+	it("lists the public branch first, because it is the one almost everybody wants", () => {
 		expect(parseBranches(response, "896660").at(0)?.name).toBe("public");
 	});
 
-	test("drops a branch that needs a password we do not have", () => {
+	it("drops a branch that needs a password we do not have", () => {
 		expect(parseBranches(response, "896660").map((branch) => branch.name)).toEqual([
 			"public",
 			"default_old",
 		]);
 	});
 
-	test("keeps the description and the build id steam gives", () => {
+	it("keeps the description and the build id steam gives", () => {
 		const old = parseBranches(response, "896660").at(1);
 
 		expect(old?.description).toBe("Previous stable");
 		expect(old?.buildId).toBe("20460518");
 	});
 
-	test("answers with nothing for an app steam did not describe", () => {
+	it("answers with nothing for an app steam did not describe", () => {
 		expect(parseBranches(response, "1")).toEqual([]);
 		expect(parseBranches({}, "896660")).toEqual([]);
 	});
 });
 
 describe("turning a branch into a panel option", () => {
-	test("marks the public branch as the latest one", () => {
+	it("marks the public branch as the latest one", () => {
 		expect(
 			branchOption({
 				name: "public",
@@ -61,7 +61,7 @@ describe("turning a branch into a panel option", () => {
 		).toBe(true);
 	});
 
-	test("labels an older branch with its description and its build", () => {
+	it("labels an older branch with its description and its build", () => {
 		expect(
 			branchOption({
 				name: "default_old",
@@ -71,7 +71,7 @@ describe("turning a branch into a panel option", () => {
 		).toBe("Previous stable — build 20460518");
 	});
 
-	test("falls back to the branch name when steam gave no description", () => {
+	it("falls back to the branch name when steam gave no description", () => {
 		expect(
 			branchOption({
 				name: "default_preml",

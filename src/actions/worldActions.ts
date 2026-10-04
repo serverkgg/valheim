@@ -27,7 +27,7 @@ export const worldActions: Bridge.Actions = {
 			for (const path of worldPaths(name)) {
 				if (await context.files.exists(path)) {
 					throw new BridgeUserError({
-						ar: `عندك عالم اسمه "${name}" أصلًا. فعّله من الجدول أو اختر اسم ثاني.`,
+						ar: `لديك ماب باسم «${name}» أصلًا. فعّلها من الجدول، أو اختر اسمًا آخر.`,
 						en: `A world named "${name}" already exists. Activate it from the table, or pick another name.`,
 					});
 				}
@@ -37,7 +37,7 @@ export const worldActions: Bridge.Actions = {
 
 			if (previous === name) {
 				throw new BridgeUserError({
-					ar: `"${name}" هو العالم الشغّال أصلًا.`,
+					ar: `«${name}» هي الماب الشغّالة أصلًا.`,
 					en: `"${name}" is already the active world.`,
 				});
 			}
@@ -53,7 +53,7 @@ export const worldActions: Bridge.Actions = {
 			context.activity.report({
 				name: BridgeEventName.WorldCreated,
 				text: {
-					ar: `تم إنشاء عالم جديد ${name}، ويتولّد مع التشغيل الجاي، وعالم ${previous} يبقى محفوظ`,
+					ar: `تم إنشاء ماب جديدة ${name}، وتُنشأ في التشغيل القادم، وتبقى ماب ${previous} محفوظة`,
 					en: `Created world ${name}, it generates on the next start, and ${previous} stays saved`,
 				},
 				subject: name,

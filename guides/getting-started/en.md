@@ -1,12 +1,12 @@
 ## Create your server
 
-From the **Create a server** page pick Valheim. The game is relatively light — 4GB of RAM carries a full group, and 2GB is the floor.
+From the **Create a server** page pick Valheim. The game is relatively light: 4GB of RAM carries a full group, and 2GB is the floor.
 
 After payment your machine starts provisioning. There is nothing to set up: as soon as the machine is ready your server downloads the latest Valheim build from Steam, generates a world, and starts.
 
 > [!note] We generated a random password so the server runs from the first second. Change it to something you can pass around from the settings tab before you invite anyone.
 
-## The password — the one rule that stops the server
+## The password, the one rule that stops the server
 
 Valheim refuses to start when:
 
@@ -31,45 +31,45 @@ Then inside Valheim:
 3. Open the **Servers** tab and press **Add server**
 4. Paste the address exactly as shown, press **Add**, then **Connect** and type the password
 :::else
-Your server is still setting up, so it has no address yet — it appears here the moment the install finishes.
+Your server is still setting up, so it has no address yet. It appears here the moment the install finishes.
 
 @[open](console)
 :::
 
-> [!note] Friends on Xbox, PS5 or Switch 2 cannot join by address. Turn **Crossplay** on in the settings and a six-digit join code appears on the Overview page — they use **Join Game, Join by code**.
+> [!note] Friends on Xbox, PS5 or Switch 2 can't join by address. Turn **Crossplay** on in the settings and a six-digit join code appears on the Overview page, and they use **Join Game, Join by code**.
 
 ## Make yourself admin
 
-To unlock the in-game admin commands (the F5 console), your player id has to be on the admin list.
+To unlock the in-game admin commands (the F5 console), your player ID has to be on the admin list.
 
-Since 1.0 Valheim reads a **Platform User ID** rather than a bare Steam number: on Steam that is `V_` followed by your Steam64 id, and on Xbox it is `Xbox_` followed by theirs.
+Since 1.0 Valheim reads a **Platform User ID** rather than a bare Steam number: on Steam that's `V_` followed by your Steam64 ID, and on Xbox it's `Xbox_` followed by theirs.
 
 1. Open the **Players** page
-2. Add your own platform id — a bare Steam number (17 digits starting with 7656, which steamid.io resolves from your profile link) gets the `V_` prefix added for you
+2. Add your own platform ID. A bare Steam number (17 digits starting with 7656, which steamid.io resolves from your profile link) gets the `V_` prefix added for you
 3. Restart your server
 
 @[open](panel:players)
 
 > [!warning] Valheim reads the admin, ban and allow lists at start only. Any addition or removal needs a restart to take effect.
 
-## What a Valheim server cannot do
+## What a Valheim server can't do
 
-None of this is missing from your server — it is missing from Valheim itself, whose dedicated server ships with no console and no RCON:
+None of this is missing from your server. It's missing from Valheim itself, whose dedicated server ships with no console and no RCON:
 
 - **No console commands.** Valheim reads nothing from the console at all, so the ones we answer there (`status`, `players`, `worlds`, `mods`, `joincode`, `ban`, `unban`) are handled by the panel rather than passed to the game. Anything else belongs in game on F5.
 - **No announcements.** There is no way for the server to put a message in front of players.
-- **No kick.** Ban from the Players page adds the platform id to the ban list and stops them the next time they try to join — restart your server to drop them if they are on right now.
+- **No kick.** Ban from the Players page adds the platform ID to the ban list and stops them the next time they try to join. Restart your server to drop them if they're on right now.
 - **No manual save.** Valheim saves on its interval (set in the settings) and on shutdown. A backup archives the last autosave.
 
-Anything that needs live admin commands is done from inside Valheim on F5, once you are an admin.
+Anything that needs live admin commands is done from inside Valheim on F5, once you're an admin.
 
 ## Your first night
 
 - Every player's progress lives on their own machine, and the world lives on your server
 - The server keeps running with nobody online, so farms and builds stay where they are
 - 10 players is Valheim's own limit and only a mod changes it
-- Your world is safe — we take automatic backups, and you can take one yourself
+- Your world is safe: we take automatic backups, and you can take one yourself
 
 @[open](backups)
 
-> [!warning] Valheim patches often. Your server pulls the newest Steam build every time it starts, so a restart is all it takes to catch up — just make sure your players updated their game too.
+> [!warning] Valheim patches often. Your server pulls the newest Steam build every time it starts, so a restart is all it takes to catch up. Just make sure your players updated their game too.

@@ -15,28 +15,28 @@ export const loader: Bridge.Detail = {
 			id: PACK_ID,
 			title: "BepInEx",
 			subtitle: {
-				ar: "محمّل المودات اللي تشتغل عليه كل مودات فالهايم",
+				ar: "مشغّل المودات الذي تشتغل عليه كل مودات فالهايم",
 				en: "The mod loader every Valheim mod runs on",
 			},
 			description: installed
 				? {
-						ar: "مركّب. أي مود تنزّله من الكتالوج تحت يشتغل عليه.",
+						ar: "مثبّت. كل مود تثبّته من الكتالوج في الأسفل يشتغل عليه.",
 						en: "Installed. Every mod you install from the catalog below runs on it.",
 					}
 				: {
-						ar: "مو مركّب. اضغط «ركّب BepInEx» وننزّله لك من ثندرستور.",
-						en: "Not installed. Press Install BepInEx and we pull it from Thunderstore for you.",
+						ar: "غير مثبّت. اضغط «ثبّت BepInEx أو حدّثه» وننزّله لك من Thunderstore.",
+						en: "Not installed. Press Install or update BepInEx and we pull it from Thunderstore for you.",
 					},
 			image: null,
 			badges: [
 				{
 					label: installed
 						? {
-								ar: "مركّب",
+								ar: "مثبّت",
 								en: "Installed",
 							}
 						: {
-								ar: "مو مركّب",
+								ar: "غير مثبّت",
 								en: "Not installed",
 							},
 					tone: installed ? BridgeDetailTone.Success : BridgeDetailTone.Neutral,
@@ -48,7 +48,7 @@ export const loader: Bridge.Detail = {
 								en: "Loaded on start",
 							}
 						: {
-								ar: "مطفّي",
+								ar: "موقوف",
 								en: "Off",
 							},
 					tone: enabled ? BridgeDetailTone.Success : BridgeDetailTone.Warning,
@@ -67,7 +67,7 @@ export const loader: Bridge.Detail = {
 				{
 					key: "mods",
 					label: {
-						ar: "المودات المركّبة",
+						ar: "المودات المثبّتة",
 						en: "Installed mods",
 					},
 					value: mods,

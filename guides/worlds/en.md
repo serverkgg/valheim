@@ -2,10 +2,10 @@
 
 Every Valheim world is two files sharing one name:
 
-- `Serverk.db` — everything built in the world, every chest and every tamed animal
-- `Serverk.fwl` — the world seed and its rules (the preset and the modifiers)
+- `Serverk.db`: everything built in the world, every chest and every tamed animal
+- `Serverk.fwl`: the world seed and its rules (the preset and the modifiers)
 
-They belong together. Upload a `.db` without its `.fwl` and Valheim treats the world as new and rolls a different seed — everything built disappears.
+They belong together. Upload a `.db` without its `.fwl` and Valheim treats the world as new and rolls a different seed, and everything built disappears.
 
 @[open](panel:worlds)
 
@@ -25,32 +25,32 @@ On Linux:
 
 1. Close Valheim first so the world is written out completely
 2. Open the **Worlds** tab in the panel and press **Upload a world**
-3. Pick both files together — the `.db` and the `.fwl`
+3. Pick both files together: the `.db` and the `.fwl`
 4. Press **Activate** on the world once it appears in the table
-5. Restart your server, or start it if it is stopped
+5. Restart your server, or start it if it's stopped
 
-> [!note] Stop your server before uploading. World files cannot go in while it runs, and we tell you if you try.
+> [!note] Stop your server before uploading. World files can't go in while it runs, and we tell you if you try.
 
-> [!warning] Existing world files cannot be replaced. If a name is already taken, give both the `.db` and `.fwl` files the same new name before uploading.
+> [!warning] Existing world files can't be replaced. If a name is already taken, give both the `.db` and `.fwl` files the same new name before uploading.
 
 ## Switch between worlds
 
-Every row in the table has an **Activate** button. Activating changes which world your server runs, and it applies after a restart. The old world stays exactly where it is — switch back whenever you like.
+Every row in the table has an **Activate** button. Activating changes which world your server runs, and it applies after a restart. The old world stays exactly where it is, so switch back whenever you like.
 
-You cannot delete the selected world; activate another one first, then delete it. Deleting takes a backup first, and if your server is running we stop it and start it again for you. A failed backup stops the delete.
+You can't delete the selected world. Activate another one first, then delete it. Deleting takes a backup first, and if your server is running we stop it and start it again for you. A failed backup stops the delete.
 
 ## Start a fresh world
 
 From the same tab, **Create a world**: type a new name and Valheim generates a complete world under it the next time your server restarts. Your current world stays in the table.
 
-> [!note] The preset and the modifiers (under Settings) are written into the `.fwl` the first time that world runs. Changing them later needs **at least one start** to stick, and clearing them does not restore the defaults — you have to pick the default value yourself.
+> [!note] The preset and the modifiers (under Settings) are written into the `.fwl` the first time that world runs. Changing them later needs **at least one start** to stick, and clearing them doesn't restore the defaults, so you have to pick the default value yourself.
 
 ## Backups
 
 You have two layers:
 
-- **Valheim's own backups** — kept by Valheim inside the world folder; the count and the timing are in the settings
-- **Your Serverk backups** — taken automatically, or by you on demand, and they are the ones that restore in one press
+- **Valheim's own backups**: kept by Valheim inside the world folder. The count and the timing are in the settings
+- **Your Serverk backups**: taken automatically, or by you on demand, and they're the ones that restore in one click
 
 @[open](backups)
 

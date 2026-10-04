@@ -28,7 +28,7 @@ export const setup: Bridge.Setup = {
 				en: "Name your server and set the password",
 			},
 			help: {
-				ar: "جهّزنا لك كلمة مرور عشوائية عشان يشتغل من أول لحظة. غيّرها لكلمة تنعاد على أصحابك، ولا تحطها داخل الاسم.",
+				ar: "أنشأنا لك كلمة مرور عشوائية ليشتغل السيرفر من أول لحظة. غيّرها إلى كلمة يسهل مشاركتها مع أصحابك، ولا تضعها داخل الاسم.",
 				en: "We generated a random password so the server runs from the first second. Change it to something you can pass around, and never put it inside the name.",
 			},
 		},
@@ -43,11 +43,11 @@ export const setup: Bridge.Setup = {
 				CROSSPLAY_FIELD,
 			],
 			title: {
-				ar: "كيف يدخلون عليك",
+				ar: "طريقة دخول أصحابك",
 				en: "How people reach you",
 			},
 			help: {
-				ar: "اعرضه في قائمة السيرفرات أو خلّه خاص، وفعّل اللعب المشترك إذا فيكم أحد على Xbox أو Game Pass.",
+				ar: "اعرضه في قائمة السيرفرات أو اجعله خاصًا، وفعّل الكروس بلاي إذا كان أحدكم يلعب على Xbox أو Game Pass.",
 				en: "List it in the server browser or keep it private, and turn crossplay on if anyone plays on Xbox or Game Pass.",
 			},
 		},
@@ -60,12 +60,12 @@ export const setup: Bridge.Setup = {
 				tabId: MODS_TAB,
 			},
 			title: {
-				ar: "مودات؟ من هنا",
+				ar: "تريد مودات؟",
 				en: "Want mods?",
 			},
 			help: {
-				ar: "ركّب BepInEx بضغطة، وبعدها دوّر على أي مود من ثندرستور. كل لاعب لازم يركّب نفس المودات عنده.",
-				en: "Install BepInEx with one press, then search Thunderstore for anything you like. Every player needs the same mods on their side.",
+				ar: "ثبّت BepInEx بضغطة واحدة، ثم ابحث عن أي مود في Thunderstore. يلزم أن يثبّت كل لاعب المودات نفسها لديه.",
+				en: "Install BepInEx in one click, then search Thunderstore for anything you like. Every player needs the same mods on their side.",
 			},
 		},
 		{
@@ -76,12 +76,12 @@ export const setup: Bridge.Setup = {
 				tab: GuideOpenTab.Access,
 			},
 			title: {
-				ar: "عزّم أصحابك",
+				ar: "ادعُ أصحابك",
 				en: "Invite your friends",
 			},
 			help: {
-				ar: "انسخ عنوان سيرفرك وأرسله لهم، يضيفونه من Join Game ➜ Add server. ولو مفعّل اللعب المشترك، كود الدخول يطلع لك في صفحة النظرة العامة ويدخلون فيه من Join by code.",
-				en: "Copy your address and send it to them — they add it under Join Game, Add server. With crossplay on, the join code sits on the Overview page and they use Join by code instead.",
+				ar: "انسخ عنوان سيرفرك وأرسله لهم، ليضيفوه من Join Game ➜ Add server. وعند تفعيل الكروس بلاي، يظهر كود الدخول في صفحة النظرة العامة، ويدخلون به من Join by code.",
+				en: "Copy your address and send it to them, and they add it under Join Game, Add server. With crossplay on, the join code sits on the Overview page and they use Join by code instead.",
 			},
 		},
 	],

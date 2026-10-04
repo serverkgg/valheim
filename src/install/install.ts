@@ -300,7 +300,7 @@ export const install: Bridge.Install = {
 		if (!(await isGameInstalled(context))) {
 			throw new BridgeUserError(
 				{
-					ar: "التنزيل من Steam خلص بس ملفات اللعبة ناقصة. جرّب التثبيت مرة ثانية.",
+					ar: "اكتمل التنزيل من Steam لكن ملفات اللعبة ناقصة. جرب التثبيت مرة ثانية.",
 					en: "The download from Steam finished but the game files are missing. Try the install again.",
 				},
 				{

@@ -25,50 +25,50 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "status",
 		summary: {
-			ar: "حالة سيرفرك: النسخة، العالم، اللاعبين، آخر حفظ، واللعب المشترك.",
+			ar: "حالة سيرفرك: الإصدار، والماب، واللاعبون، وآخر حفظ، والكروس بلاي.",
 			en: "Your server's state: version, world, players, last save and crossplay.",
 		},
 	},
 	{
 		name: "players",
 		summary: {
-			ar: "اللاعبين اللي داخلين الحين بمعرّفاتهم.",
-			en: "The players who are on right now, with their platform ids.",
+			ar: "اللاعبون المتصلون الآن بمعرّفاتهم.",
+			en: "The players who are on right now, with their platform IDs.",
 		},
 	},
 	{
 		name: "worlds",
 		summary: {
-			ar: "عوالمك اللي على القرص، والشغّال منها معلّم بنجمة.",
+			ar: "ماباتك المحفوظة على القرص، والشغّالة منها معلّمة بنجمة.",
 			en: "The worlds on disk, with the active one marked.",
 		},
 	},
 	{
 		name: "mods",
 		summary: {
-			ar: "حالة BepInEx وكل مود مركّب.",
+			ar: "حالة BepInEx وكل مود مثبّت.",
 			en: "The BepInEx state and every installed mod.",
 		},
 	},
 	{
 		name: "joincode",
 		summary: {
-			ar: "كود الدخول حق اللعب المشترك.",
+			ar: "كود الدخول الخاص بالكروس بلاي.",
 			en: "The crossplay join code.",
 		},
 	},
 	{
 		name: "help",
 		summary: {
-			ar: "الأوامر اللي نرد عليها من هنا.",
+			ar: "الأوامر التي ننفّذها من هنا.",
 			en: "The commands we answer from here.",
 		},
 	},
 	{
 		name: "ban",
 		summary: {
-			ar: "يضيف اللاعب لقائمة المحظورين. اكتب اسمه لو داخل، أو معرّفه لو مو داخل.",
-			en: "Add a player to the ban list. Write their name while they are on, or their platform id when they are not.",
+			ar: "يضيف اللاعب إلى قائمة المحظورين. اكتب اسمه إذا كان متصلًا، أو معرّفه إذا لم يكن متصلًا.",
+			en: "Add a player to the ban list. Write their name while they're on, or their platform ID when they're not.",
 		},
 		syntax: "ban <player>",
 		args: [
@@ -79,8 +79,8 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "unban",
 		summary: {
-			ar: "يشيل المعرّف من قائمة المحظورين.",
-			en: "Take a platform id off the ban list.",
+			ar: "يزيل المعرّف من قائمة المحظورين.",
+			en: "Take a platform ID off the ban list.",
 		},
 		syntax: "unban <platformId>",
 		args: [

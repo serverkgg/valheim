@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { environmentPrefix, startCommand, worldModifierArgs } from "./valheimArgv";
 import { settingsOf } from "./valheimSettings";
 
@@ -33,33 +33,33 @@ const valueAfter = (argv: string[], flag: string) => {
 };
 
 describe("building the valheim start command", () => {
-	test("starts with an env prefix so nothing is exported outside the volume", () => {
+	it("starts with an env prefix so nothing is exported outside the volume", () => {
 		expect(command().at(0)).toBe("env");
 	});
 
-	test("starts the server binary itself, so the bridge holds the game and not a shell", () => {
+	it("starts the server binary itself, so the bridge holds the game and not a shell", () => {
 		expect(command()).toContain("./valheim_server.x86_64");
 	});
 
-	test("takes the game port from the manifest rather than valheim's default", () => {
+	it("takes the game port from the manifest rather than valheim's default", () => {
 		expect(valueAfter(command(), "-port")).toBe("9700");
 	});
 
-	test("never passes a query port, because valheim always derives it from the game port", () => {
+	it("never passes a query port, because valheim always derives it from the game port", () => {
 		expect(command()).not.toContain("-queryport");
 	});
 
-	test("saves inside the volume, so nothing lands in the home config directory", () => {
+	it("saves inside the volume, so nothing lands in the home config directory", () => {
 		expect(valueAfter(command(), "-savedir")).toBe("/home/container/save");
 	});
 
-	test("passes the name, the world and the password the settings carry", () => {
+	it("passes the name, the world and the password the settings carry", () => {
 		expect(valueAfter(command(), "-name")).toBe("Serverk Valheim");
 		expect(valueAfter(command(), "-world")).toBe("Serverk");
 		expect(valueAfter(command(), "-password")).toBe("vikings");
 	});
 
-	test("writes public as the 1 or 0 valheim expects", () => {
+	it("writes public as the 1 or 0 valheim expects", () => {
 		expect(valueAfter(command(), "-public")).toBe("1");
 		expect(
 			valueAfter(
@@ -71,7 +71,7 @@ describe("building the valheim start command", () => {
 		).toBe("0");
 	});
 
-	test("adds crossplay only when it is on", () => {
+	it("adds crossplay only when it is on", () => {
 		expect(command()).not.toContain("-crossplay");
 		expect(
 			command({
@@ -80,11 +80,11 @@ describe("building the valheim start command", () => {
 		).toContain("-crossplay");
 	});
 
-	test("names the instance after the server code, so two crossplay servers behind one ip stay apart", () => {
+	it("names the instance after the server code, so two crossplay servers behind one ip stay apart", () => {
 		expect(valueAfter(command(), "-instanceid")).toBe("abc123");
 	});
 
-	test("passes no instance id at all when the platform gave none", () => {
+	it("passes no instance id at all when the platform gave none", () => {
 		expect(
 			startCommand({
 				gamePort: 9700,
@@ -95,14 +95,14 @@ describe("building the valheim start command", () => {
 		).not.toContain("-instanceid");
 	});
 
-	test("keeps the instance id before the save and backup numbers valheim reads after it", () => {
+	it("keeps the instance id before the save and backup numbers valheim reads after it", () => {
 		const argv = command();
 
 		expect(argv.indexOf("-instanceid")).toBeGreaterThan(argv.indexOf("-savedir"));
 		expect(argv.indexOf("-instanceid")).toBeLessThan(argv.indexOf("-saveinterval"));
 	});
 
-	test("passes every save and backup number through", () => {
+	it("passes every save and backup number through", () => {
 		const argv = command();
 
 		expect(valueAfter(argv, "-saveinterval")).toBe("1800");
@@ -113,7 +113,7 @@ describe("building the valheim start command", () => {
 });
 
 describe("switching the start command onto bepinex", () => {
-	test("loads only the game library path while mods are off", () => {
+	it("loads only the game library path while mods are off", () => {
 		expect(environmentPrefix(false)).toEqual([
 			"env",
 			"LD_LIBRARY_PATH=./linux64",
@@ -121,7 +121,7 @@ describe("switching the start command onto bepinex", () => {
 		]);
 	});
 
-	test("adds every doorstop variable the bepinex pack's own script sets", () => {
+	it("adds every doorstop variable the bepinex pack's own script sets", () => {
 		expect(environmentPrefix(true)).toEqual([
 			"env",
 			"LD_LIBRARY_PATH=./doorstop_libs:./linux64",
@@ -132,7 +132,7 @@ describe("switching the start command onto bepinex", () => {
 		]);
 	});
 
-	test("keeps the doorstop variables in front of the binary", () => {
+	it("keeps the doorstop variables in front of the binary", () => {
 		const argv = command({
 			bepinex: true,
 		});
@@ -142,11 +142,11 @@ describe("switching the start command onto bepinex", () => {
 });
 
 describe("building the world modifier arguments", () => {
-	test("passes nothing when the owner changed nothing", () => {
+	it("passes nothing when the owner changed nothing", () => {
 		expect(worldModifierArgs(settings())).toEqual([]);
 	});
 
-	test("puts the preset first, because a preset overwrites what comes before it", () => {
+	it("puts the preset first, because a preset overwrites what comes before it", () => {
 		const args = worldModifierArgs(
 			settings({
 				preset: "hard",
@@ -159,7 +159,7 @@ describe("building the world modifier arguments", () => {
 		expect(args.indexOf("-modifier")).toBeGreaterThan(1);
 	});
 
-	test("writes every modifier as the key and value pair valheim reads", () => {
+	it("writes every modifier as the key and value pair valheim reads", () => {
 		expect(
 			worldModifierArgs(
 				settings({
@@ -177,7 +177,7 @@ describe("building the world modifier arguments", () => {
 		]);
 	});
 
-	test("drops a modifier value valheim does not accept", () => {
+	it("drops a modifier value valheim does not accept", () => {
 		expect(
 			worldModifierArgs(
 				settings({
@@ -187,7 +187,7 @@ describe("building the world modifier arguments", () => {
 		).toEqual([]);
 	});
 
-	test("writes each checkbox as its own setkey", () => {
+	it("writes each checkbox as its own setkey", () => {
 		expect(
 			worldModifierArgs(
 				settings({

@@ -39,8 +39,8 @@ const PACK_ARCHIVE = `${STAGING_ROOT}/bepinex.zip`;
 export const PACK_SUBJECT = "BepInEx";
 
 const UNPACK_FAILED: Bridge.Text = {
-	ar: "ما قدرنا نفك ملفات BepInEx. جرّب مرة ثانية بعد شوي.",
-	en: "We could not unpack BepInEx. Try again in a moment.",
+	ar: "تعذّر فك ملفات BepInEx، جرب مرة ثانية بعد لحظة.",
+	en: "We couldn't unpack BepInEx. Try again in a moment.",
 };
 
 export interface PackStamp {
@@ -87,7 +87,7 @@ export const requirePack = async (context: Bridge.Context) => {
 	}
 
 	throw new BridgeUserError({
-		ar: "ركّب BepInEx أول من تبويب المودات، بعدها تقدر تنزّل مودات.",
+		ar: "ثبّت BepInEx أولًا من تبويب المودات، ثم ثبّت المودات.",
 		en: "Install BepInEx from the mods tab first, then you can install mods.",
 	});
 };

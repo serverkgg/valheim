@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeDownloadError, BridgeUserError } from "@serverkgg/bridge";
 import type { ThunderstoreVersion } from "@serverkgg/bridge/catalogs";
 import { BRIDGE_ACTIVITY_LIMIT, BridgeEventName } from "@serverkgg/bridge/protocol";
@@ -279,7 +279,7 @@ const stagedPaths = (files: Map<string, string>) => {
 };
 
 describe("installing a thunderstore mod", () => {
-	test("records the plugin size without a file listing that can overflow after the copy", async () => {
+	it("records the plugin size without a file listing that can overflow after the copy", async () => {
 		const { context, files, listed } = harness({
 			extract(destination, entries) {
 				entries.set(`${destination}/Jotunn.dll`, "plugin");
@@ -298,7 +298,7 @@ describe("installing a thunderstore mod", () => {
 		expect(stagedPaths(files)).toEqual([]);
 	});
 
-	test("tracks the top-level patchers and configs a BepInEx-shaped archive brings, so removing the mod takes them too", async () => {
+	it("tracks the top-level patchers and configs a BepInEx-shaped archive brings, so removing the mod takes them too", async () => {
 		const { context, files, listed, commands } = harness({
 			extract(destination, entries) {
 				entries.set(`${destination}/manifest.json`, "{}");
@@ -341,7 +341,7 @@ describe("installing a thunderstore mod", () => {
 		expect(pathsUnder(files, enabledPath(MOD_ID))).toEqual([]);
 	});
 
-	test("fails the install and cleans the staging when a patcher folder cannot be read", async () => {
+	it("fails the install and cleans the staging when a patcher folder cannot be read", async () => {
 		const { context, files } = harness({
 			extract(destination, entries) {
 				entries.set(`${destination}/BepInEx/plugins/Jotunn.dll`, "plugin");
@@ -356,7 +356,7 @@ describe("installing a thunderstore mod", () => {
 		expect(pathsUnder(files, enabledPath(MOD_ID))).toEqual([]);
 	});
 
-	test("cleans the staging and tells the owner when the archive cannot be unpacked", async () => {
+	it("cleans the staging and tells the owner when the archive cannot be unpacked", async () => {
 		const { context, files, commands } = harness({
 			extract(destination, entries) {
 				entries.set(`${destination}/half.dll`, "partial");
@@ -374,7 +374,7 @@ describe("installing a thunderstore mod", () => {
 		expect(commands).toEqual([]);
 	});
 
-	test("removes a half-copied plugin folder when the copy fails partway", async () => {
+	it("removes a half-copied plugin folder when the copy fails partway", async () => {
 		const { context, files } = harness({
 			extract(destination, entries) {
 				entries.set(`${destination}/Jotunn.dll`, "plugin");
@@ -391,7 +391,7 @@ describe("installing a thunderstore mod", () => {
 });
 
 describe("installing the bepinex pack", () => {
-	test("cleans the staging and merges nothing into the server when the pack cannot be unpacked", async () => {
+	it("cleans the staging and merges nothing into the server when the pack cannot be unpacked", async () => {
 		const { context, files, commands } = harness({
 			extract(destination, entries) {
 				entries.set(`${destination}/BepInEx/core/partial.dll`, "partial");
@@ -426,7 +426,7 @@ const dependenciesOf = (count: number) => {
 };
 
 describe("reporting catalog installs to the activity feed", () => {
-	test("reports ModInstalled with the title and version and never emits ModLoaded", async () => {
+	it("reports ModInstalled with the title and version and never emits ModLoaded", async () => {
 		const { context, reported, emitted } = harness({
 			extract: pluginOnly,
 		});
@@ -452,7 +452,7 @@ describe("reporting catalog installs to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("reports every dependency it installed, naming the mod that needs it", async () => {
+	it("reports every dependency it installed, naming the mod that needs it", async () => {
 		const { context, reported } = harness({
 			extract: pluginOnly,
 			dependencies: {
@@ -475,7 +475,7 @@ describe("reporting catalog installs to the activity feed", () => {
 		expect(reported[0]?.text.en).toBe("Installed mod Lib0 (2.24.3), which Jotunn needs");
 	});
 
-	test("summarises the dependencies in one entry when the install goes past the answer limit", async () => {
+	it("summarises the dependencies in one entry when the install goes past the answer limit", async () => {
 		const { context, reported } = harness({
 			extract: pluginOnly,
 			dependencies: {
@@ -515,7 +515,7 @@ describe("reporting catalog installs to the activity feed", () => {
 		]);
 	});
 
-	test("reports removing, turning off and turning on a mod by its title", async () => {
+	it("reports removing, turning off and turning on a mod by its title", async () => {
 		const { context, reported } = harness({
 			extract: pluginOnly,
 		});
@@ -547,7 +547,7 @@ describe("reporting catalog installs to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("says why a mod download failed and keeps the raw error as the cause", async () => {
+	it("says why a mod download failed and keeps the raw error as the cause", async () => {
 		const failure = new BridgeDownloadError(404, "thunderstore.io answered 404");
 		const { context, reported } = harness({
 			extract: pluginOnly,
@@ -576,7 +576,7 @@ describe("reporting the bepinex loader to the activity feed", () => {
 		await run(context, {});
 	};
 
-	test("reports ModLoaderInstalled with the pack version", async () => {
+	it("reports ModLoaderInstalled with the pack version", async () => {
 		const { context, reported } = harness({
 			extract: pluginOnly,
 		});
@@ -599,7 +599,7 @@ describe("reporting the bepinex loader to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("reports ModLoaderRemoved with how many mods went with it", async () => {
+	it("reports ModLoaderRemoved with how many mods went with it", async () => {
 		const { context, reported } = harness({
 			extract: pluginOnly,
 			dependencies: {
@@ -625,7 +625,7 @@ describe("reporting the bepinex loader to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("still removes the loader when the facts for the activity entry cannot be read", async () => {
+	it("still removes the loader when the facts for the activity entry cannot be read", async () => {
 		const { context, reported, files } = harness({
 			extract: pluginOnly,
 			failRead: MODS_SIDECAR,
@@ -645,7 +645,7 @@ describe("reporting the bepinex loader to the activity feed", () => {
 		});
 	});
 
-	test("says why the pack download failed and keeps the raw error as the cause", async () => {
+	it("says why the pack download failed and keeps the raw error as the cause", async () => {
 		const failure = new BridgeDownloadError(null, "thunderstore.io could not be reached");
 		const { context, reported } = harness({
 			extract: pluginOnly,
@@ -656,7 +656,7 @@ describe("reporting the bepinex loader to the activity feed", () => {
 
 		expect(error).toBeInstanceOf(BridgeUserError);
 		expect(error instanceof BridgeUserError ? error.text.en : "").toBe(
-			"We could not reach the source to download BepInEx. Try again.",
+			"We couldn't reach the source to download BepInEx. Try again.",
 		);
 		expect(error instanceof Error ? error.cause : null).toBe(failure);
 		expect(reported).toEqual([]);
@@ -664,7 +664,7 @@ describe("reporting the bepinex loader to the activity feed", () => {
 });
 
 describe("offering to remove bepinex", () => {
-	test("offers the removal while the loader is on the server", async () => {
+	it("offers the removal while the loader is on the server", async () => {
 		const { context } = harness({
 			extract: pluginOnly,
 		});
@@ -672,7 +672,7 @@ describe("offering to remove bepinex", () => {
 		expect(await bepinex.unavailable?.(context)).toEqual({});
 	});
 
-	test("says bepinex is not installed in the words the refusal uses", async () => {
+	it("says bepinex is not installed in the words the refusal uses", async () => {
 		const { context, files } = harness({
 			extract: pluginOnly,
 		});
@@ -682,9 +682,9 @@ describe("offering to remove bepinex", () => {
 
 		const unavailable = await bepinex.unavailable?.(context);
 
-		expect(unavailable?.uninstall?.en).toBe("BepInEx is not installed.");
+		expect(unavailable?.uninstall?.en).toBe("BepInEx isn't installed.");
 		await expect(bepinex.actions.uninstall?.(context, {}) ?? Promise.resolve()).rejects.toThrow(
-			"BepInEx is not installed.",
+			"BepInEx isn't installed.",
 		);
 	});
 });

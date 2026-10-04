@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { BANNED_LIST, roster, SETTINGS_FILE } from "../shared";
@@ -74,7 +74,7 @@ beforeEach(() => {
 });
 
 describe("splitting a console line", () => {
-	test("lowercases the command and keeps the rest as one argument", () => {
+	it("lowercases the command and keeps the rest as one argument", () => {
 		expect(parseConsoleLine("  Ban Abu Rakan ")).toEqual({
 			args: [
 				"Abu",
@@ -85,7 +85,7 @@ describe("splitting a console line", () => {
 		});
 	});
 
-	test("reads a command with no arguments at all", () => {
+	it("reads a command with no arguments at all", () => {
 		expect(parseConsoleLine("status")).toEqual({
 			args: [],
 			name: "status",
@@ -95,13 +95,13 @@ describe("splitting a console line", () => {
 });
 
 describe("rendering the roster for the console", () => {
-	test("says plainly that nobody is on", () => {
+	it("says plainly that nobody is on", () => {
 		expect(rosterLines([])).toEqual([
 			"no players online",
 		]);
 	});
 
-	test("finds a player by character, by account and by id", () => {
+	it("finds a player by character, by account and by id", () => {
 		roster.read(`Got handshake from client "${ALICE}"`);
 		roster.read("Got character ZDOID from Meslzy : 123:1");
 		roster.identify(
@@ -121,7 +121,7 @@ describe("rendering the roster for the console", () => {
 });
 
 describe("answering a console line valheim itself never reads", () => {
-	test("answers a safe argument-free command with what the owner typed", async () => {
+	it("answers a safe argument-free command with what the owner typed", async () => {
 		const { context } = harness(
 			settings({
 				world: "Serverk",
@@ -134,7 +134,7 @@ describe("answering a console line valheim itself never reads", () => {
 		expect(reply?.line).toContain("crossplay: off");
 	});
 
-	test("lists the roster the log gave us", async () => {
+	it("lists the roster the log gave us", async () => {
 		const { context } = harness(settings({}));
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -143,7 +143,7 @@ describe("answering a console line valheim itself never reads", () => {
 		expect((await consoleHandler(context, "players"))?.line).toContain(`Meslzy,,Steam,${ALICE}`);
 	});
 
-	test("names every command it answers, so help is real rather than a link", async () => {
+	it("names every command it answers, so help is real rather than a link", async () => {
 		const { context } = harness(settings({}));
 		const reply = await consoleHandler(context, "help");
 
@@ -160,25 +160,25 @@ describe("answering a console line valheim itself never reads", () => {
 		}
 	});
 
-	test("ignores an empty line instead of refusing it", async () => {
+	it("ignores an empty line instead of refusing it", async () => {
 		const { context } = harness(settings({}));
 
 		expect(await consoleHandler(context, "   ")).toBeNull();
 	});
 
-	test("refuses a command it cannot honour, because there is no stdin behind it", async () => {
+	it("refuses a command it cannot honour, because there is no stdin behind it", async () => {
 		const { context } = harness(settings({}));
 
 		expect(consoleHandler(context, "kick Meslzy")).rejects.toThrow(BridgeUserError);
 	});
 
-	test("refuses save honestly, because valheim has no save command at all", async () => {
+	it("refuses save honestly, because valheim has no save command at all", async () => {
 		const { context } = harness(settings({}));
 
 		expect(consoleHandler(context, "save")).rejects.toThrow(BridgeUserError);
 	});
 
-	test("refuses a join code while crossplay is off", async () => {
+	it("refuses a join code while crossplay is off", async () => {
 		const { context } = harness(
 			settings({
 				crossplay: false,
@@ -190,7 +190,7 @@ describe("answering a console line valheim itself never reads", () => {
 });
 
 describe("banning from the console", () => {
-	test("resolves a player by the name the log gave them", async () => {
+	it("resolves a player by the name the log gave them", async () => {
 		const { context, file } = harness(settings({}));
 
 		roster.read(`Got handshake from client "${ALICE}"`);
@@ -202,7 +202,7 @@ describe("banning from the console", () => {
 		expect(file(BANNED_LIST)).toContain(ALICE);
 	});
 
-	test("falls back to the id for somebody who is not on, prefixing a bare steam number", async () => {
+	it("falls back to the id for somebody who is not on, prefixing a bare steam number", async () => {
 		const { context, file } = harness(settings({}));
 
 		await consoleHandler(context, "ban 76561198000000002");
@@ -210,19 +210,19 @@ describe("banning from the console", () => {
 		expect(file(BANNED_LIST)).toContain(BOB);
 	});
 
-	test("refuses a name nobody on the server answers to and no id can be read from", async () => {
+	it("refuses a name nobody on the server answers to and no id can be read from", async () => {
 		const { context } = harness(settings({}));
 
 		expect(consoleHandler(context, "ban meslzy")).rejects.toThrow(BridgeUserError);
 	});
 
-	test("refuses a ban with no target", async () => {
+	it("refuses a ban with no target", async () => {
 		const { context } = harness(settings({}));
 
 		expect(consoleHandler(context, "ban")).rejects.toThrow(BridgeUserError);
 	});
 
-	test("takes an id back off the list", async () => {
+	it("takes an id back off the list", async () => {
 		const { context, file } = harness({
 			...settings({}),
 			[BANNED_LIST]: `// List banned players ID\n${ALICE}\n`,
@@ -234,7 +234,7 @@ describe("banning from the console", () => {
 		expect(file(BANNED_LIST)).not.toContain(ALICE);
 	});
 
-	test("refuses to unban an id that was never banned", async () => {
+	it("refuses to unban an id that was never banned", async () => {
 		const { context } = harness(settings({}));
 
 		expect(consoleHandler(context, `unban ${ALICE}`)).rejects.toThrow(BridgeUserError);
@@ -242,7 +242,7 @@ describe("banning from the console", () => {
 });
 
 describe("reporting console moderation to the activity feed", () => {
-	test("keeps the plain PlayerBanned emit and reports the ban once beside it", async () => {
+	it("keeps the plain PlayerBanned emit and reports the ban once beside it", async () => {
 		const { context, reported, emitted } = harness(
 			settings({
 				password: "hunter2-secret",
@@ -270,7 +270,7 @@ describe("reporting console moderation to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain("hunter2-secret");
 	});
 
-	test("reports an unban once under PlayerUnbanned with the id", async () => {
+	it("reports an unban once under PlayerUnbanned with the id", async () => {
 		const { context, reported, emitted } = harness({
 			...settings({
 				password: "hunter2-secret",
@@ -294,7 +294,7 @@ describe("reporting console moderation to the activity feed", () => {
 });
 
 describe("resolving moderation targets safely", () => {
-	test("an exact ID wins over a character impersonating that ID", async () => {
+	it("an exact ID wins over a character impersonating that ID", async () => {
 		const { context, file } = harness(settings({}));
 		roster.handshake(ALICE);
 		roster.name(BOB);
@@ -305,7 +305,7 @@ describe("resolving moderation targets safely", () => {
 		expect(file(BANNED_LIST)).not.toContain(ALICE);
 	});
 
-	test("an offline ID cannot be shadowed by an online character", async () => {
+	it("an offline ID cannot be shadowed by an online character", async () => {
 		const { context, file } = harness(settings({}));
 		roster.handshake(ALICE);
 		roster.name(BOB);
@@ -314,7 +314,7 @@ describe("resolving moderation targets safely", () => {
 		expect(file(BANNED_LIST)).not.toContain(ALICE);
 	});
 
-	test("duplicate character names refuse the ban without changing the file", async () => {
+	it("duplicate character names refuse the ban without changing the file", async () => {
 		const { context, file } = harness(settings({}));
 		roster.handshake(ALICE);
 		roster.name("Rakan");
@@ -324,13 +324,13 @@ describe("resolving moderation targets safely", () => {
 		expect(file(BANNED_LIST)).toBe("");
 	});
 
-	test("platform IDs stay case sensitive", () => {
+	it("platform IDs stay case sensitive", () => {
 		roster.handshake(ALICE);
 		expect(findPlayer(roster.all(), ALICE.toLowerCase())).toBeNull();
 	});
 });
 
-test("inherited object properties are refused as unknown console commands", async () => {
+it("inherited object properties are refused as unknown console commands", async () => {
 	const { context } = harness(settings({}));
 	for (const command of [
 		"constructor",

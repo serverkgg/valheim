@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { WORLD_NAME_ARGUMENT, worldActions } from "../actions";
@@ -108,7 +108,7 @@ const worldAction = async (context: Bridge.Context, action: string, id: string) 
 };
 
 describe("world files stay safe during panel changes", () => {
-	test("refuses running uploads without removing the uploaded or existing file", async () => {
+	it("refuses running uploads without removing the uploaded or existing file", async () => {
 		const source = `${WORLD_STAGING}/Serverk.db`;
 		const target = worldPath("Serverk", "db");
 		const { context, files } = harness(true, "Serverk", {
@@ -120,7 +120,7 @@ describe("world files stay safe during panel changes", () => {
 		expect(files.get(target)).toBe("saved world");
 	});
 
-	test("refuses collisions while stopped and preserves both files", async () => {
+	it("refuses collisions while stopped and preserves both files", async () => {
 		for (const extension of [
 			"db",
 			"fwl",
@@ -137,7 +137,7 @@ describe("world files stay safe during panel changes", () => {
 		}
 	});
 
-	test("uploads both halves of a distinct world while stopped", async () => {
+	it("uploads both halves of a distinct world while stopped", async () => {
 		const data = `${WORLD_STAGING}/Imported.db`;
 		const meta = `${WORLD_STAGING}/Imported.fwl`;
 		const { context, files } = harness(false, "Serverk", {
@@ -152,7 +152,7 @@ describe("world files stay safe during panel changes", () => {
 		expect(files.has(meta)).toBe(false);
 	});
 
-	test("keeps staged data when moving a new world fails", async () => {
+	it("keeps staged data when moving a new world fails", async () => {
 		const source = `${WORLD_STAGING}/Imported.db`;
 		const { context, files } = harness(
 			false,
@@ -167,7 +167,7 @@ describe("world files stay safe during panel changes", () => {
 		expect(files.has(worldPath("Imported", "db"))).toBe(false);
 	});
 
-	test("still protects the selected world while stopped", async () => {
+	it("still protects the selected world while stopped", async () => {
 		const data = worldPath("Serverk", "db");
 		const { context, files } = harness(false, "Serverk", {
 			[data]: "buildings",
@@ -176,7 +176,7 @@ describe("world files stay safe during panel changes", () => {
 		expect(files.get(data)).toBe("buildings");
 	});
 
-	test("deletes an unselected world and old save halves while stopped", async () => {
+	it("deletes an unselected world and old save halves while stopped", async () => {
 		const paths = [
 			"db",
 			"fwl",
@@ -202,7 +202,7 @@ describe("world files stay safe during panel changes", () => {
 });
 
 describe("reporting world changes to the activity feed", () => {
-	test("names the uploaded world file", async () => {
+	it("names the uploaded world file", async () => {
 		const source = `${WORLD_STAGING}/Imported.db`;
 		const { context, reported } = harness(false, "Serverk", {
 			[source]: "buildings",
@@ -214,7 +214,7 @@ describe("reporting world changes to the activity feed", () => {
 			{
 				name: BridgeEventName.WorldImported,
 				text: {
-					ar: "تم رفع ملف العالم Imported.db",
+					ar: "تم رفع ملف الماب Imported.db",
 					en: "Uploaded the world file Imported.db",
 				},
 				subject: "Imported",
@@ -226,7 +226,7 @@ describe("reporting world changes to the activity feed", () => {
 		]);
 	});
 
-	test("names the world it activated and the one it replaced", async () => {
+	it("names the world it activated and the one it replaced", async () => {
 		const { context, reported } = harness(false, "Serverk", {
 			[worldPath("Next", "fwl")]: "seed",
 		});
@@ -244,7 +244,7 @@ describe("reporting world changes to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("names the deleted world", async () => {
+	it("names the deleted world", async () => {
 		const { context, reported } = harness(false, "Serverk", {
 			[worldPath("Old", "db")]: "old",
 		});
@@ -257,7 +257,7 @@ describe("reporting world changes to the activity feed", () => {
 		expect(reported[0]?.subject).toBe("Old");
 	});
 
-	test("says a created world is generated at the next start", async () => {
+	it("says a created world is generated at the next start", async () => {
 		const { context, reported } = harness(false, "Serverk");
 		const create = worldActions.actions.create;
 
@@ -281,7 +281,7 @@ describe("reporting world changes to the activity feed", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("reports nothing when a change is refused", async () => {
+	it("reports nothing when a change is refused", async () => {
 		const { context, reported } = harness(false, "Old", {
 			[worldPath("Old", "db")]: "old",
 		});
@@ -302,7 +302,7 @@ describe("which world actions apply", () => {
 		return row;
 	};
 
-	test("the active world cannot be deleted or activated, and says why in the words the refusal uses", async () => {
+	it("the active world cannot be deleted or activated, and says why in the words the refusal uses", async () => {
 		const { context, files } = harness(false, "Serverk", {
 			[worldPath("Serverk", "db")]: "buildings",
 			[worldPath("Serverk", "fwl")]: "seed",
@@ -318,7 +318,7 @@ describe("which world actions apply", () => {
 		expect(files.get(worldPath("Serverk", "db"))).toBe("buildings");
 	});
 
-	test("a world missing its .fwl cannot be activated, and says which file to upload", async () => {
+	it("a world missing its .fwl cannot be activated, and says which file to upload", async () => {
 		const { context } = harness(false, "Serverk", {
 			[worldPath("Half", "db")]: "buildings",
 		});
@@ -330,7 +330,7 @@ describe("which world actions apply", () => {
 		await expect(worldAction(context, "activate", "Half")).rejects.toThrow(unavailable?.activate?.en);
 	});
 
-	test("a complete world that is not active, and a row that carries only its id, keep every action", async () => {
+	it("a complete world that is not active, and a row that carries only its id, keep every action", async () => {
 		const { context } = harness(false, "Serverk", {
 			[worldPath("Old", "db")]: "buildings",
 			[worldPath("Old", "fwl")]: "seed",

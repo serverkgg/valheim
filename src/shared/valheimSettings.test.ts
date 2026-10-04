@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { BridgeUserError } from "@serverkgg/bridge";
 import {
 	fieldValues,
@@ -22,7 +22,7 @@ const stored = (over: Record<string, string | number | boolean | null> = {}) => 
 };
 
 describe("reading the settings file the driver owns", () => {
-	test("falls back to a default for every field the file has not seen", () => {
+	it("falls back to a default for every field the file has not seen", () => {
 		const values = fieldValues({});
 
 		for (const field of SETTING_FIELDS) {
@@ -30,11 +30,11 @@ describe("reading the settings file the driver owns", () => {
 		}
 	});
 
-	test("keeps what the file already holds", () => {
+	it("keeps what the file already holds", () => {
 		expect(fieldValues(stored()).name).toBe("Serverk Valheim");
 	});
 
-	test("clamps a save interval outside the range valheim accepts", () => {
+	it("clamps a save interval outside the range valheim accepts", () => {
 		expect(
 			settingsOf(
 				stored({
@@ -51,7 +51,7 @@ describe("reading the settings file the driver owns", () => {
 		).toBe(3600);
 	});
 
-	test("reads a boolean the panel sent as a string", () => {
+	it("reads a boolean the panel sent as a string", () => {
 		expect(
 			settingsOf(
 				stored({
@@ -61,7 +61,7 @@ describe("reading the settings file the driver owns", () => {
 		).toBe(true);
 	});
 
-	test("falls back to the default when a field is blank", () => {
+	it("falls back to the default when a field is blank", () => {
 		expect(
 			settingsOf(
 				stored({
@@ -73,7 +73,7 @@ describe("reading the settings file the driver owns", () => {
 });
 
 describe("guarding the two settings valheim refuses to start with", () => {
-	test("refuses a password shorter than valheim's own minimum", () => {
+	it("refuses a password shorter than valheim's own minimum", () => {
 		expect(() =>
 			guardSettings(
 				stored({
@@ -90,7 +90,7 @@ describe("guarding the two settings valheim refuses to start with", () => {
 		).toHaveLength(PASSWORD_MIN_LENGTH);
 	});
 
-	test("refuses a password that sits inside the server name", () => {
+	it("refuses a password that sits inside the server name", () => {
 		expect(() =>
 			guardSettings(
 				stored({
@@ -101,12 +101,12 @@ describe("guarding the two settings valheim refuses to start with", () => {
 		).toThrow(BridgeUserError);
 	});
 
-	test("catches the password in the name whatever the casing", () => {
+	it("catches the password in the name whatever the casing", () => {
 		expect(passwordInName("Serverk VIKINGS hall", "vikings")).toBe(true);
 		expect(passwordInName("Serverk hall", "vikings")).toBe(false);
 	});
 
-	test("refuses the password inside the world name, which valheim rejects the same way", () => {
+	it("refuses the password inside the world name, which valheim rejects the same way", () => {
 		expect(() =>
 			guardSettings(
 				stored({
@@ -117,7 +117,7 @@ describe("guarding the two settings valheim refuses to start with", () => {
 		).toThrow(BridgeUserError);
 	});
 
-	test("refuses a password with a space in it", () => {
+	it("refuses a password with a space in it", () => {
 		expect(() =>
 			guardSettings(
 				stored({
@@ -127,7 +127,7 @@ describe("guarding the two settings valheim refuses to start with", () => {
 		).toThrow(BridgeUserError);
 	});
 
-	test("refuses a world name valheim cannot turn into a file", () => {
+	it("refuses a world name valheim cannot turn into a file", () => {
 		expect(() =>
 			guardSettings(
 				stored({
@@ -137,19 +137,19 @@ describe("guarding the two settings valheim refuses to start with", () => {
 		).toThrow(BridgeUserError);
 	});
 
-	test("accepts the settings a fresh server ships with", () => {
+	it("accepts the settings a fresh server ships with", () => {
 		expect(guardSettings(stored()).world).toBe("Serverk");
 	});
 });
 
 describe("naming a world", () => {
-	test("takes letters, digits, spaces, dashes and underscores", () => {
+	it("takes letters, digits, spaces, dashes and underscores", () => {
 		expect(isValidWorldName("Serverk")).toBe(true);
 		expect(isValidWorldName("Serverk World 2")).toBe(true);
 		expect(isValidWorldName("serverk_world-2")).toBe(true);
 	});
 
-	test("refuses anything that could reach outside the worlds folder", () => {
+	it("refuses anything that could reach outside the worlds folder", () => {
 		expect(isValidWorldName("../escape")).toBe(false);
 		expect(isValidWorldName("world/two")).toBe(false);
 		expect(isValidWorldName(".hidden")).toBe(false);
@@ -158,15 +158,15 @@ describe("naming a world", () => {
 });
 
 describe("seeding a password so the server runs from the first second", () => {
-	test("generates one long enough for valheim", () => {
+	it("generates one long enough for valheim", () => {
 		expect(generatePassword().length).toBeGreaterThanOrEqual(PASSWORD_MIN_LENGTH);
 	});
 
-	test("generates one with no space in it", () => {
+	it("generates one with no space in it", () => {
 		expect(generatePassword()).not.toMatch(/\s/);
 	});
 
-	test("generates a different one every time", () => {
+	it("generates a different one every time", () => {
 		expect(generatePassword()).not.toBe(generatePassword());
 	});
 });

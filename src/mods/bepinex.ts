@@ -28,8 +28,8 @@ const removalFactsOf = async (context: Bridge.Context): Promise<RemovalFacts> =>
 };
 
 const NOT_INSTALLED: Bridge.Text = {
-	ar: "BepInEx مو مركّب أصلًا.",
-	en: "BepInEx is not installed.",
+	ar: "BepInEx غير مثبّت أصلًا.",
+	en: "BepInEx isn't installed.",
 };
 
 const installedAtAll = async (context: Bridge.Context) => {
@@ -95,7 +95,7 @@ export const bepinex: Bridge.Actions = {
 								en: "Removed BepInEx",
 							}
 						: {
-								ar: `تمت إزالة BepInEx وكل المودات اللي عليه (${count})`,
+								ar: `تمت إزالة BepInEx وكل المودات التي عليه (${count})`,
 								en: `Removed BepInEx and every mod on it (${count})`,
 							},
 				subject: PACK_SUBJECT,

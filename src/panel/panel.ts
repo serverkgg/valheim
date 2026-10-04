@@ -61,12 +61,12 @@ const choice = (value: string, ar: string, en: string) => {
 	};
 };
 
-const DEFAULT_CHOICE = choice(UNSET, "زي ما هو", "Leave as it is");
+const DEFAULT_CHOICE = choice(UNSET, "كما هو", "Leave as it is");
 
 const PRESET_OPTIONS = [
 	DEFAULT_CHOICE,
 	choice("normal", "عادي", "Normal"),
-	choice("casual", "هادي", "Casual"),
+	choice("casual", "هادئ", "Casual"),
 	choice("easy", "سهل", "Easy"),
 	choice("hard", "صعب", "Hard"),
 	choice("hardcore", "هاردكور", "Hardcore"),
@@ -76,16 +76,16 @@ const PRESET_OPTIONS = [
 
 const COMBAT_OPTIONS = [
 	DEFAULT_CHOICE,
-	choice("veryeasy", "سهل مرة", "Very easy"),
+	choice("veryeasy", "سهل جدًا", "Very easy"),
 	choice("easy", "سهل", "Easy"),
 	choice("hard", "صعب", "Hard"),
-	choice("veryhard", "صعب مرة", "Very hard"),
+	choice("veryhard", "صعب جدًا", "Very hard"),
 ];
 
 const DEATH_PENALTY_OPTIONS = [
 	DEFAULT_CHOICE,
-	choice("casual", "ما تخسر شي", "Casual"),
-	choice("veryeasy", "سهل مرة", "Very easy"),
+	choice("casual", "بلا خسارة", "Casual"),
+	choice("veryeasy", "سهل جدًا", "Very easy"),
 	choice("easy", "سهل", "Easy"),
 	choice("hard", "صعب", "Hard"),
 	choice("hardcore", "هاردكور", "Hardcore"),
@@ -97,7 +97,7 @@ const RESOURCE_OPTIONS = [
 	choice("less", "أقل", "Less"),
 	choice("more", "أكثر", "More"),
 	choice("muchmore", "أكثر بكثير", "Much more"),
-	choice("most", "أقصى شي", "Most"),
+	choice("most", "الحد الأقصى", "Most"),
 ];
 
 const RAID_OPTIONS = [
@@ -111,7 +111,7 @@ const RAID_OPTIONS = [
 
 const PORTAL_OPTIONS = [
 	DEFAULT_CHOICE,
-	choice("casual", "تنقل كل شي", "Carry anything"),
+	choice("casual", "تنقل كل شيء", "Carry anything"),
 	choice("hard", "قيود أكثر", "Stricter"),
 	choice("veryhard", "بورتالات مقفلة", "No portals"),
 ];
@@ -132,7 +132,7 @@ const settingsTab: Bridge.Tab = {
 				en: "Your server",
 			},
 			help: {
-				ar: "اسم سيرفرك وكلمة مروره وعالمه، وكيف يوصلون له أصحابك.",
+				ar: "اسم سيرفرك وكلمة مروره ومابه، وطريقة وصول أصحابك إليه.",
 				en: "Your server's name, password and world, and how your friends reach it.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -147,12 +147,12 @@ const settingsTab: Bridge.Tab = {
 						en: "Server name",
 					},
 					help: {
-						ar: "الاسم اللي يشوفه اللاعبين في قائمة سيرفرات فالهايم.",
+						ar: "الاسم الذي يراه اللاعبون في قائمة سيرفرات فالهايم.",
 						en: "The name players see in the Valheim server browser.",
 					},
 					warning: {
-						ar: "لا تحط كلمة المرور داخل الاسم — فالهايم يرفض يشتغل كذا.",
-						en: "Never put the password inside the name — Valheim refuses to start.",
+						ar: "لا تضع كلمة المرور داخل الاسم، فلن يشتغل فالهايم بهذا الشكل.",
+						en: "Never put the password inside the name. Valheim refuses to start.",
 					},
 					maxLength: NAME_LENGTH,
 				},
@@ -164,12 +164,12 @@ const settingsTab: Bridge.Tab = {
 						en: "Join password",
 					},
 					help: {
-						ar: `لازم ${PASSWORD_MIN_LENGTH} حروف على الأقل وبدون مسافات. كل لاعب بيكتبها مرة وحدة أول ما يدخل.`,
+						ar: `${PASSWORD_MIN_LENGTH} أحرف على الأقل، دون مسافات. يكتبها كل لاعب مرة واحدة عند أول دخول.`,
 						en: `At least ${PASSWORD_MIN_LENGTH} characters, no spaces. Every player types it once when they join.`,
 					},
 					pattern: PASSWORD_PATTERN,
 					patternHint: {
-						ar: `من ${PASSWORD_MIN_LENGTH} إلى ${PASSWORD_LENGTH} حرف، وبدون مسافات.`,
+						ar: `من ${PASSWORD_MIN_LENGTH} إلى ${PASSWORD_LENGTH} حرفًا، دون مسافات.`,
 						en: `Between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_LENGTH} characters, with no spaces.`,
 					},
 					maxLength: PASSWORD_LENGTH,
@@ -178,11 +178,11 @@ const settingsTab: Bridge.Tab = {
 					key: WORLD_FIELD,
 					control: BridgeControl.Text,
 					label: {
-						ar: "العالم الشغّال",
+						ar: "الماب الشغّالة",
 						en: "Active world",
 					},
 					help: {
-						ar: "اسم ملف الحفظ اللي يشتغل عليه سيرفرك. اسم ما له ملف يبني عالم جديد. تبويب العوالم أسهل من كتابته هنا.",
+						ar: "اسم ملف الحفظ الذي يشتغل عليه سيرفرك. الاسم الذي ليس له ملف يُنشئ ماب جديدة. تبويب المابات أسهل من كتابة الاسم هنا.",
 						en: "The save file your server runs. A name with no file behind it generates a new world. The worlds tab is easier than typing it here.",
 					},
 					pattern: WORLD_PATTERN,
@@ -200,19 +200,19 @@ const settingsTab: Bridge.Tab = {
 						en: "List in the server browser",
 					},
 					help: {
-						ar: "لما تطفّيه يختفي سيرفرك من القائمة، ويدخلونه أصحابك بالعنوان المباشر بس.",
-						en: "Turn it off and your server disappears from the browser — friends join by the direct address only.",
+						ar: "عند إيقافه يختفي سيرفرك من القائمة، ويدخله أصحابك بالعنوان المباشر فقط.",
+						en: "Turn it off and your server disappears from the browser. Friends join by the direct address only.",
 					},
 				},
 				{
 					key: CROSSPLAY_FIELD,
 					control: BridgeControl.Boolean,
 					label: {
-						ar: "اللعب المشترك (Crossplay)",
+						ar: "الكروس بلاي (Crossplay)",
 						en: "Crossplay",
 					},
 					help: {
-						ar: "يخلي لاعبين Xbox و Game Pass يدخلون بكود دخول. بس ينقل السيرفر لشبكة PlayFab، فيوقف عداد اللاعبين المباشر ونحسبهم من اللوق.",
+						ar: "يسمح للاعبي Xbox و Game Pass بالدخول بكود دخول. لكنه ينقل السيرفر إلى شبكة PlayFab، فيتوقف عداد اللاعبين المباشر، ونحسب اللاعبين من السجل بدلًا منه.",
 						en: "Lets Xbox and Game Pass players join with a code. It moves the server onto PlayFab, so the live A2S player count stops answering and we count from the log instead.",
 					},
 				},
@@ -222,11 +222,11 @@ const settingsTab: Bridge.Tab = {
 			layout: BridgeLayout.Form,
 			id: "world-rules",
 			title: {
-				ar: "قواعد العالم",
+				ar: "قواعد الماب",
 				en: "World rules",
 			},
 			help: {
-				ar: "صعوبة اللعب وكل قاعدة فيه. النمط يضبطها كلها دفعة وحدة.",
+				ar: "صعوبة اللعب وكل قاعدة فيه. يضبطها النمط كلها دفعة واحدة.",
 				en: "How hard the world plays, rule by rule. A preset sets them all in one move.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -241,7 +241,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Preset",
 					},
 					help: {
-						ar: "يضبط كل القواعد تحت دفعة وحدة. اختياره يلغي أي تعديل يدوي تحته.",
+						ar: "يضبط كل القواعد في الأسفل دفعة واحدة، ويلغي اختياره أي تعديل يدوي عليها.",
 						en: "Sets every rule below in one move. Picking one overrides whatever you set by hand underneath.",
 					},
 					options: PRESET_OPTIONS,
@@ -254,7 +254,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Combat",
 					},
 					help: {
-						ar: "قوة الوحوش والضرر اللي تاخذه.",
+						ar: "قوة الوحوش والضرر الذي تتلقاه.",
 						en: "How hard the creatures hit and how much damage you take.",
 					},
 					options: COMBAT_OPTIONS,
@@ -267,8 +267,8 @@ const settingsTab: Bridge.Tab = {
 						en: "Death penalty",
 					},
 					help: {
-						ar: "وش تخسر لما تموت — الأغراض، الخبرة، ولا ولا شي.",
-						en: "What you lose when you die — items, skill levels, or nothing at all.",
+						ar: "ما تخسره عند الموت: الأغراض، أو الخبرة، أو لا شيء.",
+						en: "What you lose when you die: items, skill levels, or nothing at all.",
 					},
 					options: DEATH_PENALTY_OPTIONS,
 				},
@@ -280,7 +280,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Resources",
 					},
 					help: {
-						ar: "كم مورد يطلع لك من كل شي تجمعه.",
+						ar: "كمية الموارد التي تحصل عليها من كل ما تجمعه.",
 						en: "How much every gathered thing gives you.",
 					},
 					options: RESOURCE_OPTIONS,
@@ -293,7 +293,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Base raids",
 					},
 					help: {
-						ar: "كم مرة تهجم الوحوش على قاعدتكم.",
+						ar: "عدد مرات هجوم الوحوش على قاعدتكم.",
 						en: "How often creatures come for your base.",
 					},
 					options: RAID_OPTIONS,
@@ -306,8 +306,8 @@ const settingsTab: Bridge.Tab = {
 						en: "Portals",
 					},
 					help: {
-						ar: "وش ينقل معك في البورتال — المعادن ولا لا.",
-						en: "What travels through a portal with you — metals or not.",
+						ar: "ما ينتقل معك عبر البورتال، ومنه المعادن.",
+						en: "What travels through a portal with you, metals or not.",
 					},
 					options: PORTAL_OPTIONS,
 				},
@@ -319,7 +319,7 @@ const settingsTab: Bridge.Tab = {
 						en: "No build cost",
 					},
 					help: {
-						ar: "تبني بدون ما تصرف موارد.",
+						ar: "تبني دون أن تصرف أي موارد.",
 						en: "Build without spending any resources.",
 					},
 				},
@@ -331,7 +331,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Player events",
 					},
 					help: {
-						ar: "الأحداث العشوائية تلحق اللاعبين وين ما راحوا.",
+						ar: "تلحق الأحداث العشوائية اللاعبين أينما ذهبوا.",
 						en: "Random events follow players wherever they go.",
 					},
 				},
@@ -343,7 +343,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Passive creatures",
 					},
 					help: {
-						ar: "الوحوش ما تهاجم أول.",
+						ar: "لا تبدأ الوحوش بالهجوم.",
 						en: "Creatures never attack first.",
 					},
 				},
@@ -351,11 +351,11 @@ const settingsTab: Bridge.Tab = {
 					key: NO_MAP_FIELD,
 					control: BridgeControl.Boolean,
 					label: {
-						ar: "بدون خريطة",
+						ar: "بدون ماب",
 						en: "No map",
 					},
 					help: {
-						ar: "تلعبون بدون خريطة ولا علامات. تحدي كبير.",
+						ar: "تلعبون دون ماب أو علامات. تحدٍّ كبير.",
 						en: "You play with no map and no markers at all. A serious challenge.",
 					},
 				},
@@ -369,7 +369,7 @@ const settingsTab: Bridge.Tab = {
 				en: "Saving and backups",
 			},
 			help: {
-				ar: "كل كم يحفظ فالهايم لحاله، وكم نسخة يحتفظ فيها جوّا مجلد العالم.",
+				ar: "عدد مرات الحفظ التلقائي في فالهايم، وعدد النسخ التي يحتفظ بها داخل مجلد الماب.",
 				en: "How often Valheim autosaves, and how many copies it keeps inside the world folder.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -380,11 +380,11 @@ const settingsTab: Bridge.Tab = {
 					key: SAVE_INTERVAL_FIELD,
 					control: BridgeControl.Number,
 					label: {
-						ar: "كل كم يحفظ (بالثواني)",
+						ar: "فترة الحفظ (بالثواني)",
 						en: "Save interval (seconds)",
 					},
 					help: {
-						ar: "فالهايم ما فيه أمر حفظ يدوي، فهذا الرقم هو اللي يقرّر كم ممكن يضيع لو تعطّل السيرفر. النسخة الاحتياطية تاخذ آخر حفظ.",
+						ar: "لا يوجد في فالهايم أمر حفظ يدوي، فهذا الرقم يحدد مقدار ما قد يضيع إذا تعطّل السيرفر. وتأخذ النسخة الاحتياطية آخر حفظ.",
 						en: "Valheim has no manual save command, so this number decides how much a crash can cost. A backup archives the last autosave.",
 					},
 					min: SAVE_INTERVAL_MIN,
@@ -395,11 +395,11 @@ const settingsTab: Bridge.Tab = {
 					key: BACKUPS_FIELD,
 					control: BridgeControl.Number,
 					label: {
-						ar: "نسخ فالهايم الداخلية",
+						ar: "نسخ فالهايم الاحتياطية الداخلية",
 						en: "Valheim's own backups",
 					},
 					help: {
-						ar: "كم نسخة يحتفظ فيها فالهايم جوّا مجلد العالم. هذي غير النسخ الاحتياطية حقت سيرفرك.",
+						ar: "عدد النسخ التي يحتفظ بها فالهايم داخل مجلد الماب. وهي منفصلة عن النسخ الاحتياطية لسيرفرك.",
 						en: "How many copies Valheim keeps inside the world folder. These are separate from your Serverk backups.",
 					},
 					min: BACKUPS_MIN,
@@ -413,7 +413,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Short backup (seconds)",
 					},
 					help: {
-						ar: "كل كم ياخذ فالهايم نسخة قريبة.",
+						ar: "عدد مرات أخذ فالهايم للنسخة القريبة.",
 						en: "How often Valheim takes its short-interval copy.",
 					},
 					min: BACKUP_SHORT_MIN,
@@ -428,7 +428,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Long backup (seconds)",
 					},
 					help: {
-						ar: "كل كم ياخذ فالهايم نسخة بعيدة، عشان ترجع لك ليوم أمس لو خرب شي.",
+						ar: "عدد مرات أخذ فالهايم للنسخة البعيدة، لتبقى نسخة الأمس متاحة إذا تلف شيء.",
 						en: "How often Valheim takes its long-interval copy, so yesterday is still there when something breaks.",
 					},
 					min: BACKUP_LONG_MIN,
@@ -441,18 +441,18 @@ const settingsTab: Bridge.Tab = {
 			layout: BridgeLayout.Form,
 			id: "branch",
 			title: {
-				ar: "نسخة اللعبة",
+				ar: "بيلد اللعبة",
 				en: "Game build",
 			},
 			help: {
-				ar: "الفرع اللي ننزّل منه فالهايم من Steam. تغييره يعيد التنزيل.",
+				ar: "الفرع الذي ننزّل منه فالهايم من Steam. تغييره يعيد تنزيل اللعبة.",
 				en: "The Steam branch we pull Valheim from. Changing it redownloads the game.",
 			},
 			target: BridgeFormTarget.Variables,
 			reinstall: true,
 			confirm: BridgeConfirm.Strong,
 			confirmText: {
-				ar: "بنوقف سيرفرك وننزّل نسخة ثانية من فالهايم من Steam ونشغّله من جديد. عالمك وإعداداتك تبقى مكانها، بس اللاعبين لازم يكونون على نفس النسخة عشان يدخلون.",
+				ar: "سنوقف سيرفرك، وننزّل بيلد آخر من فالهايم من Steam، ثم نشغّله من جديد. يبقى مابك وإعداداتك كما هي، لكن يلزم أن يشغّل اللاعبون البيلد نفسه ليدخلوا.",
 				en: "We stop your server, pull a different Valheim build from Steam, and start it again. Your world and settings stay, but players must run the same build to join.",
 			},
 			fields: [
@@ -464,7 +464,7 @@ const settingsTab: Bridge.Tab = {
 						en: "Steam branch",
 					},
 					help: {
-						ar: "خلّه على الإصدار الحالي إلا إذا تبي تثبّت سيرفرك على نسخة قديمة.",
+						ar: "أبقِه على الإصدار الحالي، إلا إذا أردت تثبيت سيرفرك على بيلد قديم.",
 						en: "Leave it on the current release unless you want to pin your server to an older build.",
 					},
 					options: {
@@ -479,7 +479,7 @@ const settingsTab: Bridge.Tab = {
 const worldsTab: Bridge.Tab = {
 	id: "worlds",
 	title: {
-		ar: "العوالم",
+		ar: "المابات",
 		en: "Worlds",
 	},
 	icon: BridgeIcon.Map,
@@ -488,12 +488,12 @@ const worldsTab: Bridge.Tab = {
 			layout: BridgeLayout.Table,
 			id: "saves",
 			title: {
-				ar: "عوالمك",
+				ar: "ماباتك",
 				en: "Your worlds",
 			},
 			help: {
-				ar: "الرفع يبي سيرفرك واقف. الحذف ناخذ له نسخة احتياطية أول، وإذا سيرفرك شغّال نوقفه ونرجّع نشغّله لحالنا. ارفع كل عالم باسم مختلف؛ ما نستبدل ملفات موجودة. تفعيل عالم ينطبق بعد إعادة التشغيل.",
-				en: "Uploading needs your server stopped. Deleting takes a backup first, stopping your server and starting it again for you if it is running. Use a distinct name for each world; existing files cannot be replaced. Activating a world applies after a restart.",
+				ar: "يتطلب الرفع أن يكون سيرفرك متوقفًا. قبل الحذف نأخذ نسخة احتياطية، وإذا كان سيرفرك شغّالًا نوقفه ثم نشغّله من جديد تلقائيًا. ارفع كل ماب باسم مختلف، فلا نستبدل الملفات الموجودة. ويُطبَّق تفعيل الماب بعد الريستارت.",
+				en: "Uploading needs your server stopped. Deleting takes a backup first, stopping your server and starting it again for you if it's running. Use a distinct name for each world, because existing files can't be replaced. Activating a world applies after a restart.",
 			},
 			module: "worlds",
 			restartHint: true,
@@ -501,7 +501,7 @@ const worldsTab: Bridge.Tab = {
 				{
 					key: "name",
 					label: {
-						ar: "العالم",
+						ar: "الماب",
 						en: "World",
 					},
 				},
@@ -515,7 +515,7 @@ const worldsTab: Bridge.Tab = {
 				{
 					key: "active",
 					label: {
-						ar: "الشغّال",
+						ar: "الشغّالة",
 						en: "Active",
 					},
 				},
@@ -529,7 +529,7 @@ const worldsTab: Bridge.Tab = {
 			],
 			upload: {
 				label: {
-					ar: "ارفع عالم",
+					ar: "ارفع ماب",
 					en: "Upload a world",
 				},
 				extensions: WORLD_EXTENSIONS,
@@ -540,42 +540,42 @@ const worldsTab: Bridge.Tab = {
 				{
 					id: "activate",
 					label: {
-						ar: "تفعيل",
+						ar: "فعّل",
 						en: "Activate",
 					},
 					confirm: BridgeConfirm.Normal,
 					confirmText: {
-						ar: "بنخلي سيرفرك يشتغل على هذا العالم. التغيير ينطبق بعد إعادة التشغيل.",
+						ar: "سيشتغل سيرفرك على هذه الماب. يُطبَّق التغيير بعد الريستارت.",
 						en: "Your server switches to this world. It applies after a restart.",
 					},
 				},
 				{
 					id: "delete",
 					label: {
-						ar: "حذف",
+						ar: "احذف",
 						en: "Delete",
 					},
 					confirm: BridgeConfirm.Strong,
 					confirmText: {
-						ar: "حذف العالم يشيل ملف .db وملف .fwl حقّه للأبد. النسخة الاحتياطية هي طريقك الوحيد للرجوع، فخذ لك وحدة قبل.",
+						ar: "حذف الماب يحذف ملفيها .db و .fwl نهائيًا. النسخة الاحتياطية هي الطريقة الوحيدة لاسترجاعها، فخذ نسخة قبل الحذف.",
 						en: "Deleting a world removes its .db and .fwl forever. A backup is your only way back, so take one first.",
 					},
 				},
 			],
 			empty: {
-				ar: "ما فيه عوالم بعد. سيرفرك يبني عالمه أول ما يشتغل.",
-				en: "No worlds yet — your server builds its own the first time it starts.",
+				ar: "لا توجد مابات بعد. يُنشئ سيرفرك مابه عند أول تشغيل.",
+				en: "No worlds yet. Your server builds its own the first time it starts.",
 			},
 		},
 		{
 			layout: BridgeLayout.Actions,
 			id: "new-world",
 			title: {
-				ar: "عالم جديد",
+				ar: "ماب جديدة",
 				en: "A new world",
 			},
 			help: {
-				ar: "سمِّ عالم جديد، ويبنيه فالهايم من الصفر أول ما تعيد تشغيل سيرفرك. عالمك الحالي يبقى مكانه وترجع له متى ما بغيت.",
+				ar: "سمِّ ماب جديدة، وسيُنشئها فالهايم من الصفر بعد ريستارت سيرفرك. تبقى مابك الحالية محفوظة، وارجع إليها متى أردت.",
 				en: "Name a new world and Valheim generates it from scratch on the next restart. Your current world stays where it is and you can switch back any time.",
 			},
 			module: "worldActions",
@@ -583,12 +583,12 @@ const worldsTab: Bridge.Tab = {
 				{
 					id: "create",
 					label: {
-						ar: "ابنِ عالم جديد",
+						ar: "أنشئ ماب جديدة",
 						en: "Create a world",
 					},
 					confirm: BridgeConfirm.Normal,
 					confirmText: {
-						ar: "سيرفرك بينتقل للعالم الجديد بعد إعادة التشغيل. القديم يبقى محفوظ في جدول العوالم.",
+						ar: "سينتقل سيرفرك إلى الماب الجديدة بعد الريستارت، وتبقى القديمة محفوظة في جدول المابات.",
 						en: "Your server moves to the new world after a restart. The old one stays in the worlds table.",
 					},
 					fields: [
@@ -596,11 +596,11 @@ const worldsTab: Bridge.Tab = {
 							key: WORLD_NAME_ARGUMENT,
 							control: BridgeControl.Text,
 							label: {
-								ar: "اسم العالم",
+								ar: "اسم الماب",
 								en: "World name",
 							},
 							help: {
-								ar: "حروف إنجليزية وأرقام ومسافات. هذا الاسم يصير اسم ملف الحفظ.",
+								ar: "حروف إنجليزية وأرقام ومسافات. يصبح هذا الاسم اسم ملف الحفظ.",
 								en: "Latin letters, digits and spaces. This name becomes the save file name.",
 							},
 							pattern: WORLD_PATTERN,
@@ -620,7 +620,7 @@ const worldsTab: Bridge.Tab = {
 const playersTab: Bridge.Tab = {
 	id: "players",
 	title: {
-		ar: "اللاعبين",
+		ar: "اللاعبون",
 		en: "Players",
 	},
 	icon: BridgeIcon.Users,
@@ -633,7 +633,7 @@ const playersTab: Bridge.Tab = {
 				en: "Server health",
 			},
 			help: {
-				ar: "النسخة، العالم، اللاعبين، آخر حفظ، وكود الدخول لو اللعب المشترك مفتوح.",
+				ar: "الإصدار، والماب، واللاعبون، وآخر حفظ، وكود الدخول عند تفعيل الكروس بلاي.",
 				en: "Version, world, players, last save, and the join code while crossplay is on.",
 			},
 			place: BridgePlace.Overview,
@@ -646,19 +646,19 @@ const playersTab: Bridge.Tab = {
 				},
 			},
 			empty: {
-				ar: "ما قدرنا نقرأ حالة سيرفرك.",
-				en: "We could not read your server's state.",
+				ar: "تعذّر قراءة حالة سيرفرك.",
+				en: "We couldn't read your server's state.",
 			},
 		},
 		{
 			layout: BridgeLayout.Table,
 			id: "online",
 			title: {
-				ar: "داخلين الحين",
+				ar: "المتصلون الآن",
 				en: "Online now",
 			},
 			help: {
-				ar: "اللي داخلين سيرفرك الحين. الاسم يطلع من اللوق، فياخذ لحظة بعد ما يدخل اللاعب.",
+				ar: "اللاعبون الموجودون في سيرفرك الآن. نقرأ الاسم من السجل، فيظهر بعد دخول اللاعب بلحظة.",
 				en: "Everyone on your server right now. The name comes from the log, so it lands a moment after they join.",
 			},
 			place: BridgePlace.Players,
@@ -697,19 +697,19 @@ const playersTab: Bridge.Tab = {
 				{
 					id: "ban",
 					label: {
-						ar: "حظر",
+						ar: "احظر",
 						en: "Ban",
 					},
 					offline: true,
 					confirm: BridgeConfirm.Strong,
 					confirmText: {
-						ar: "بنضيف معرّفه لقائمة المحظورين. فالهايم ما فيه أمر طرد، فالحظر يمنعه أول ما يحاول يدخل مرة ثانية — وإذا كان داخل الحين، أعد تشغيل سيرفرك عشان يطلع.",
-						en: "We add their platform id to the ban list. Valheim has no kick command, so the ban stops them the next time they try to join — restart your server to drop them if they are on right now.",
+						ar: "سنضيف معرّفه إلى قائمة المحظورين. لا يوجد في فالهايم أمر طرد، فيمنعه الحظر عند محاولته التالية للدخول. وإذا كان متصلًا الآن، فنفّذ ريستارت لسيرفرك ليخرج.",
+						en: "We add their platform ID to the ban list. Valheim has no kick command, so the ban stops them the next time they try to join. Restart your server to drop them if they're on right now.",
 					},
 				},
 			],
 			empty: {
-				ar: "ما فيه أحد داخل الحين.",
+				ar: "لا يوجد لاعبون متصلون الآن.",
 				en: "Nobody is online right now.",
 			},
 		},
@@ -721,8 +721,8 @@ const playersTab: Bridge.Tab = {
 				en: "Admins",
 			},
 			help: {
-				ar: `اللي هنا يفتح له كونسول الأدمن داخل اللعبة بزر F5. اكتب معرّف اللاعب، ولو كتبت رقم Steam لحاله نحطه لك بالبادئة ${STEAM_PLATFORM_PREFIX}. التغيير يبي إعادة تشغيل.`,
-				en: `Anyone here unlocks the in-game admin console on F5. Write the player's platform id — a bare Steam number gets the ${STEAM_PLATFORM_PREFIX} prefix added for you. A change needs a restart.`,
+				ar: `يفتح كل من في هذه القائمة كونسول الأدمن داخل اللعبة بزر F5. اكتب معرّف اللاعب، وإذا كتبت رقم Steam وحده نضيف له البادئة ${STEAM_PLATFORM_PREFIX}. يُطبَّق التغيير بعد الريستارت.`,
+				en: `Anyone here unlocks the in-game admin console on F5. Write the player's platform ID. A bare Steam number gets the ${STEAM_PLATFORM_PREFIX} prefix added for you. A change needs a restart.`,
 			},
 			place: BridgePlace.Players,
 			module: "admins",
@@ -761,27 +761,27 @@ const playersTab: Bridge.Tab = {
 				{
 					id: "remove",
 					label: {
-						ar: "شيله",
+						ar: "أزله",
 						en: "Remove",
 					},
 					confirm: BridgeConfirm.Normal,
 				},
 			],
 			empty: {
-				ar: "ما فيه أدمن. أضف معرّفك عشان تفتح أوامر الأدمن داخل اللعبة بزر F5.",
-				en: "No admins yet. Add your own platform id to unlock the in-game admin commands on F5.",
+				ar: "لا يوجد أدمن بعد. أضف معرّفك لتفتح أوامر الأدمن داخل اللعبة بزر F5.",
+				en: "No admins yet. Add your own platform ID to unlock the in-game admin commands on F5.",
 			},
 		},
 		{
 			layout: BridgeLayout.Table,
 			id: "bans",
 			title: {
-				ar: "المحظورين",
-				en: "Bans",
+				ar: "المحظورون",
+				en: "Banned players",
 			},
 			help: {
-				ar: `المعرّفات الممنوعة من الدخول. فالهايم يقرأ الملف عند التشغيل، فأي إضافة تبي إعادة تشغيل عشان تطرد اللي داخل الحين. رقم Steam لحاله ناخذه ونحطه بالبادئة ${STEAM_PLATFORM_PREFIX}.`,
-				en: `The platform ids that cannot join. Valheim reads the file at start, so a new entry needs a restart to drop somebody already on. A bare Steam number gets the ${STEAM_PLATFORM_PREFIX} prefix added for you.`,
+				ar: `المعرّفات الممنوعة من الدخول. يقرأ فالهايم الملف عند التشغيل، فلإخراج لاعب متصل الآن يلزم ريستارت بعد الإضافة. وإذا كتبت رقم Steam وحده نضيف له البادئة ${STEAM_PLATFORM_PREFIX}.`,
+				en: `The platform IDs that can't join. Valheim reads the file at start, so a new entry needs a restart to drop somebody already on. A bare Steam number gets the ${STEAM_PLATFORM_PREFIX} prefix added for you.`,
 			},
 			place: BridgePlace.Players,
 			module: "bans",
@@ -811,7 +811,7 @@ const playersTab: Bridge.Tab = {
 			],
 			add: {
 				label: {
-					ar: "احظر معرّف",
+					ar: "احظر معرّفًا",
 					en: "Ban an ID",
 				},
 				placeholder: `${STEAM_PLATFORM_PREFIX}76561198000000000`,
@@ -820,14 +820,14 @@ const playersTab: Bridge.Tab = {
 				{
 					id: "remove",
 					label: {
-						ar: "فُك الحظر",
+						ar: "فك الحظر",
 						en: "Unban",
 					},
 					confirm: BridgeConfirm.Normal,
 				},
 			],
 			empty: {
-				ar: "ما فيه أحد محظور.",
+				ar: "لا يوجد لاعبون محظورون.",
 				en: "Nobody is banned.",
 			},
 		},
@@ -839,8 +839,8 @@ const playersTab: Bridge.Tab = {
 				en: "Allow list",
 			},
 			help: {
-				ar: `إذا كتبت معرّف واحد هنا، ما يدخل سيرفرك إلا اللي في هذي القائمة. خلّها فاضية إذا تبي الكل يدخل بكلمة المرور.`,
-				en: `Put a single platform id here and nobody outside this list can join. Leave it empty to let anyone with the password in.`,
+				ar: `بمجرد إضافة معرّف واحد هنا، لا يدخل سيرفرك إلا من في هذه القائمة. اتركها فارغة إذا أردت أن يدخل الجميع بكلمة المرور.`,
+				en: `Put a single platform ID here and nobody outside this list can join. Leave it empty to let anyone with the password in.`,
 			},
 			place: BridgePlace.Players,
 			module: "permitted",
@@ -870,7 +870,7 @@ const playersTab: Bridge.Tab = {
 			],
 			add: {
 				label: {
-					ar: "أضف لاعب",
+					ar: "أضف لاعبًا",
 					en: "Add a player",
 				},
 				placeholder: `${STEAM_PLATFORM_PREFIX}76561198000000000`,
@@ -879,15 +879,15 @@ const playersTab: Bridge.Tab = {
 				{
 					id: "remove",
 					label: {
-						ar: "شيله",
+						ar: "أزله",
 						en: "Remove",
 					},
 					confirm: BridgeConfirm.Normal,
 				},
 			],
 			empty: {
-				ar: "القائمة فاضية، يعني الكل يقدر يدخل بكلمة المرور. أول معرّف تضيفه هنا يقفل السيرفر على المضافين بس.",
-				en: "The list is empty, so anyone with the password can join. The first id you add locks the server to the list.",
+				ar: "القائمة فارغة، فيستطيع الجميع الدخول بكلمة المرور. أول معرّف تضيفه هنا يقصر الدخول على من في القائمة فقط.",
+				en: "The list is empty, so anyone with the password can join. The first ID you add locks the server to the list.",
 			},
 		},
 	],
@@ -905,20 +905,20 @@ const modsTab: Bridge.Tab = {
 			layout: BridgeLayout.Detail,
 			id: "loader",
 			help: {
-				ar: "حالة BepInEx على سيرفرك: مركّب ولا لا، إصداره، وكم مود يشتغل عليه.",
-				en: "Where BepInEx stands on your server: whether it is installed, its version, and how many mods run on it.",
+				ar: "حالة BepInEx على سيرفرك: هل هو مثبّت، وإصداره، وعدد المودات التي تشتغل عليه.",
+				en: "Where BepInEx stands on your server: whether it's installed, its version, and how many mods run on it.",
 			},
 			module: "loader",
 			empty: {
-				ar: "ما قدرنا نقرأ حالة BepInEx.",
-				en: "We could not read the BepInEx status.",
+				ar: "تعذّر قراءة حالة BepInEx.",
+				en: "We couldn't read the BepInEx status.",
 			},
 		},
 		{
 			layout: BridgeLayout.Actions,
 			id: "loader-actions",
 			help: {
-				ar: "BepInEx هو محمّل المودات. ننزّله لك من ثندرستور ونشغّله مع سيرفرك.",
+				ar: "BepInEx هو مشغّل المودات. ننزّله لك من Thunderstore ونشغّله مع سيرفرك.",
 				en: "BepInEx is the mod loader. We pull it from Thunderstore and start your server with it.",
 			},
 			module: "bepinex",
@@ -926,24 +926,24 @@ const modsTab: Bridge.Tab = {
 				{
 					id: "setup",
 					label: {
-						ar: "ركّب BepInEx أو حدّثه",
+						ar: "ثبّت BepInEx أو حدّثه",
 						en: "Install or update BepInEx",
 					},
 					confirm: BridgeConfirm.Normal,
 					confirmText: {
-						ar: "بننزّل آخر إصدار من BepInEx ونركّبه على سيرفرك ونفعّل تشغيل المودات. يشتغل بعد إعادة التشغيل.",
+						ar: "سننزّل آخر إصدار من BepInEx، ونثبّته على سيرفرك، ونفعّل تشغيل المودات. يُطبَّق ذلك بعد الريستارت.",
 						en: "We download the latest BepInEx, install it on your server, and switch mod loading on. It applies after a restart.",
 					},
 				},
 				{
 					id: "uninstall",
 					label: {
-						ar: "شيل BepInEx وكل المودات",
+						ar: "أزل BepInEx وكل المودات",
 						en: "Remove BepInEx and every mod",
 					},
 					confirm: BridgeConfirm.Strong,
 					confirmText: {
-						ar: "بنمسح BepInEx وكل المودات وإعداداتها. عالمك ما ينمس، بس أي شي بناه مود بيختفي منه.",
+						ar: "سيتم حذف BepInEx وكل المودات وإعداداتها. تبقى مابك كما هي، لكن كل ما أضافه مود إليها سيختفي.",
 						en: "BepInEx, every mod and their configs are deleted. Your world is untouched, but anything a mod added to it disappears.",
 					},
 				},
@@ -957,7 +957,7 @@ const modsTab: Bridge.Tab = {
 				en: "Mod loading",
 			},
 			help: {
-				ar: "يقرّر إذا يشتغل سيرفرك مع BepInEx ولا فالهايم أصلي.",
+				ar: "يحدد ما إذا كان سيرفرك يشتغل مع BepInEx أو بفالهايم الأصلي.",
 				en: "Decides whether your server starts with BepInEx or as plain Valheim.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -972,11 +972,11 @@ const modsTab: Bridge.Tab = {
 						en: "Start the server with BepInEx",
 					},
 					help: {
-						ar: "لما يكون مطفّي يشتغل سيرفرك فالهايم أصلي بدون أي مود، وتبقى المودات مركّبة مكانها.",
+						ar: "عند إيقافه يشتغل سيرفرك بفالهايم الأصلي دون أي مود، وتبقى المودات مثبّتة في مكانها.",
 						en: "Off means your server runs plain Valheim with no mods, and the installed mods stay where they are.",
 					},
 					warning: {
-						ar: "كل لاعب لازم يركّب نفس المودات على جهازه عشان يدخل.",
+						ar: "يلزم أن يثبّت كل لاعب المودات نفسها على جهازه ليدخل.",
 						en: "Every player needs the same mods installed on their own game to join.",
 					},
 				},
@@ -986,18 +986,18 @@ const modsTab: Bridge.Tab = {
 			layout: BridgeLayout.Catalog,
 			id: "catalog",
 			title: {
-				ar: "مودات ثندرستور",
+				ar: "مودات Thunderstore",
 				en: "Thunderstore mods",
 			},
 			help: {
-				ar: "دوّر على أي مود من ثندرستور وركّبه، وننزّل معه كل اللي يعتمد عليه.",
-				en: "Search Thunderstore for any mod and install it — we pull everything it depends on with it.",
+				ar: "ابحث عن أي مود في Thunderstore وثبّته، وننزّل معه كل ما يعتمد عليه.",
+				en: "Search Thunderstore for any mod and install it, and we pull everything it depends on with it.",
 			},
 			module: "mods",
 			restartHint: true,
 			empty: {
-				ar: "ما فيه مودات مركّبة. دوّر على مود وركّبه، وننزّل معه كل اللي يعتمد عليه.",
-				en: "No mods installed. Search for one and install it — we pull everything it depends on with it.",
+				ar: "لا توجد مودات مثبّتة. ابحث عن مود وثبّته، وننزّل معه كل ما يعتمد عليه.",
+				en: "No mods installed. Search for one and install it, and we pull everything it depends on with it.",
 			},
 		},
 	],

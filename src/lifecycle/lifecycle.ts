@@ -31,8 +31,8 @@ export const lifecycle: Bridge.Lifecycle = {
 
 		if (settings.bepinex && !(await packInstalled(context))) {
 			throw new BridgeUserError({
-				ar: "المودات مفعّلة بس BepInEx مو مركّب. ركّبه من تبويب المودات أو طفّي الخيار.",
-				en: "Mods are on but BepInEx is not installed. Install it from the mods tab, or turn the option off.",
+				ar: "المودات مفعّلة لكن BepInEx غير مثبّت. ثبّته من تبويب المودات، أو أوقف الخيار.",
+				en: "Mods are on but BepInEx isn't installed. Install it from the mods tab, or turn the option off.",
 			});
 		}
 

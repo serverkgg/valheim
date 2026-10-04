@@ -51,7 +51,7 @@ const SORTS: Bridge.CatalogFacet[] = [
 	{
 		value: ThunderstoreSort.MostDownloaded,
 		label: {
-			ar: "الأكثر تحميلًا",
+			ar: "الأكثر تنزيلًا",
 			en: "Most downloaded",
 		},
 	},
@@ -81,7 +81,7 @@ const SORTS: Bridge.CatalogFacet[] = [
 const PROVIDER = "thunderstore";
 
 const NOT_READY_NOTE: Bridge.Text = {
-	ar: "ركّب BepInEx أول من فوق، بعدها تقدر تنزّل المودات من هنا.",
+	ar: "ثبّت BepInEx أولًا من الأعلى، ثم ثبّت المودات من هنا.",
 	en: "Install BepInEx above first, then you can install mods from here.",
 };
 
@@ -90,7 +90,7 @@ const providersOf = (ready: boolean): Bridge.CatalogProvider[] => {
 		{
 			id: PROVIDER,
 			label: {
-				ar: "ثندرستور",
+				ar: "Thunderstore",
 				en: "Thunderstore",
 			},
 			ready,
@@ -171,8 +171,8 @@ const extractMod = async (context: Bridge.Context, archive: string, staging: str
 		});
 
 		throw new BridgeUserError({
-			ar: `ما قدرنا نفك ملفات "${titleOf(version)}". جرّب مرة ثانية، وإذا تكرر اختر مود ثاني.`,
-			en: `We could not unpack "${titleOf(version)}". Try again, and if it keeps failing pick another mod.`,
+			ar: `تعذّر فك ملفات «${titleOf(version)}». جرب مرة ثانية، وإذا تكرر ذلك فاختر مودًا آخر.`,
+			en: `We couldn't unpack "${titleOf(version)}". Try again, and if it keeps failing pick another mod.`,
 		});
 	}
 };
@@ -332,7 +332,7 @@ const dependenciesActivity = (entry: ModEntry, count: number): Bridge.Activity =
 	return {
 		name: BridgeEventName.ModInstalled,
 		text: {
-			ar: `تم تثبيت ${count === 1 ? "مود واحد" : count === 2 ? "مودين" : count <= 10 ? `${count} مودات` : `${count} مود`} يحتاجها ${entry.title}`,
+			ar: `تم تثبيت ${count === 1 ? "مود واحد" : count === 2 ? "مودين" : count % 100 >= 3 && count % 100 <= 10 ? `${count} مودات` : count % 100 >= 11 ? `${count} مودًا` : `${count} مود`} يحتاجها ${entry.title}`,
 			en: `Installed ${count === 1 ? "1 mod" : `${count} mods`} that ${entry.title} needs`,
 		},
 		subject: entry.title,
@@ -365,8 +365,8 @@ const resolveVersion = async (catalog: ThunderstoreCatalog, id: string) => {
 
 	if (!parts) {
 		throw new BridgeUserError({
-			ar: `"${id}" مو معرّف حزمة صحيح على ثندرستور.`,
-			en: `"${id}" is not a Thunderstore package identifier.`,
+			ar: `«${id}» ليس معرّف حزمة صحيحًا على Thunderstore.`,
+			en: `"${id}" isn't a Thunderstore package identifier.`,
 		});
 	}
 
@@ -484,8 +484,8 @@ const removePackage = async (context: Bridge.Context, id: string) => {
 
 	if (!entry) {
 		throw new BridgeUserError({
-			ar: `"${id}" مو مركّب.`,
-			en: `"${id}" is not installed.`,
+			ar: `«${id}» غير مثبّت.`,
+			en: `"${id}" isn't installed.`,
 		});
 	}
 
@@ -515,11 +515,11 @@ const toggledActivity = (entry: ModEntry, enabled: boolean): Bridge.Activity => 
 		name: enabled ? BridgeEventName.ModEnabled : BridgeEventName.ModDisabled,
 		text: enabled
 			? {
-					ar: `تم تفعيل مود ${entry.title}، والتغيير ينطبق مع التشغيل الجاي`,
+					ar: `تم تفعيل مود ${entry.title}، ويُطبَّق التغيير في التشغيل القادم`,
 					en: `Enabled mod ${entry.title}, takes effect on the next start`,
 				}
 			: {
-					ar: `تم إيقاف مود ${entry.title}، والتغيير ينطبق مع التشغيل الجاي`,
+					ar: `تم إيقاف مود ${entry.title}، ويُطبَّق التغيير في التشغيل القادم`,
 					en: `Disabled mod ${entry.title}, takes effect on the next start`,
 				},
 		subject: entry.title,
@@ -536,8 +536,8 @@ const togglePackage = async (context: Bridge.Context, id: string, enabled: boole
 
 	if (!entry) {
 		throw new BridgeUserError({
-			ar: `"${id}" مو مركّب.`,
-			en: `"${id}" is not installed.`,
+			ar: `«${id}» غير مثبّت.`,
+			en: `"${id}" isn't installed.`,
 		});
 	}
 

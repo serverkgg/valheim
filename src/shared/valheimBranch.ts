@@ -70,7 +70,7 @@ export const PUBLIC_OPTION: Bridge.Option = {
 		en: "Current release (public)",
 	},
 	help: {
-		ar: "آخر إصدار رسمي من فالهايم. هذا اللي تبيه إلا إذا عندك سبب.",
+		ar: "آخر إصدار رسمي من فالهايم. اختره ما لم يكن لديك سبب لغيره.",
 		en: "The current Valheim release. This is the one you want unless you have a reason.",
 	},
 	latest: true,
@@ -94,7 +94,7 @@ export const branchOption = (branch: SteamBranch): Bridge.Option => {
 			en: `${branchTitleOf(branch)}${build}`,
 		},
 		help: {
-			ar: "نسخة قديمة يثبّتها فالهايم على Steam. اللاعبين لازم ينزّلون نفس النسخة عشان يدخلون.",
+			ar: "بيلد قديم تحدده Iron Gate على Steam. يلزم أن يشغّل اللاعبون البيلد نفسه ليدخلوا.",
 			en: "An older build Iron Gate pins on Steam. Players must run the same build to join.",
 		},
 	};

@@ -86,7 +86,7 @@ export const findPlayer = (players: ValheimPlayer[], needle: string): ValheimPla
 
 	if (matches.length > 1) {
 		throw new BridgeUserError({
-			ar: "فيه أكثر من لاعب بهذا الاسم. انسخ معرّف اللاعب من قائمة اللاعبين واستخدمه بدل الاسم.",
+			ar: "يوجد أكثر من لاعب بهذا الاسم. انسخ معرّف اللاعب من قائمة اللاعبين واستخدمه بدلًا من الاسم.",
 			en: "More than one player has that name. Copy the player's platform ID from the players list and use it instead.",
 		});
 	}
@@ -97,8 +97,8 @@ export const findPlayer = (players: ValheimPlayer[], needle: string): ValheimPla
 const needleOf = (line: ValheimConsoleLine) => {
 	if (line.rest.length === 0) {
 		throw new BridgeUserError({
-			ar: "اكتب اسم اللاعب أو معرّفه أول.",
-			en: "Write the player name or their platform id first.",
+			ar: "اكتب اسم اللاعب أو معرّفه أولًا.",
+			en: "Write the player name or their platform ID first.",
 		});
 	}
 
@@ -185,7 +185,7 @@ export const consoleCommands: Record<string, ValheimConsoleCommand> = {
 
 		if (!crossplay) {
 			throw new BridgeUserError({
-				ar: "كود الدخول يطلع بس لما تفعّل اللعب المشترك من الإعدادات.",
+				ar: "يظهر كود الدخول فقط بعد تفعيل الكروس بلاي من الإعدادات.",
 				en: "A join code only exists once you turn crossplay on in the settings.",
 			});
 		}
@@ -264,7 +264,7 @@ export const consoleCommands: Record<string, ValheimConsoleCommand> = {
 
 	async save() {
 		throw new BridgeUserError({
-			ar: "فالهايم ما فيه أمر حفظ. يحفظ لحاله كل فترة تحددها من الإعدادات، وأي نسخة احتياطية تاخذ آخر حفظ. قصّر الفترة إذا تبي حفظ أكثر.",
+			ar: "لا يوجد في فالهايم أمر للحفظ. يحفظ تلقائيًا كل فترة تحددها من الإعدادات، وتأخذ أي نسخة احتياطية آخر حفظ. قصّر الفترة إذا أردت حفظًا أكثر.",
 			en: "Valheim has no save command. It autosaves on the interval you set in the settings, and a backup archives the last autosave. Shorten the interval if you want it saving more often.",
 		});
 	},
@@ -281,8 +281,8 @@ export const consoleHandler: NonNullable<Bridge.Terminal["run"]> = async (contex
 
 	if (!command) {
 		throw new BridgeUserError({
-			ar: "سيرفر فالهايم ما عنده كونسول ولا RCON، فما نقدر نمرر الأمر له. أوامر الأدمن تنكتب داخل اللعبة بزر F5، والأوامر اللي نرد عليها هنا تلقاها في قائمة الأوامر.",
-			en: "A Valheim dedicated server has no console and no RCON, so we cannot pass that through. Admin commands are typed in game on F5, and the command list holds the ones we answer here.",
+			ar: "لا يوجد في سيرفر فالهايم كونسول ولا RCON، فلا يمكن تمرير هذا الأمر إليه. تُكتب أوامر الأدمن داخل اللعبة بزر F5، والأوامر التي ننفّذها هنا موجودة في قائمة الأوامر.",
+			en: "A Valheim dedicated server has no console and no RCON, so we can't pass that through. Admin commands are typed in game on F5, and the command list holds the ones we answer here.",
 		});
 	}
 

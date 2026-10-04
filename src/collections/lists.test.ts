@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { ADMIN_LIST, BANNED_LIST, PERMITTED_LIST, roster, SETTINGS_FILE } from "../shared";
@@ -80,7 +80,7 @@ beforeEach(() => {
 });
 
 describe("reporting platform id list changes", () => {
-	test("names the player a new admin is and keeps the list and the id as details", async () => {
+	it("names the player a new admin is and keeps the list and the id as details", async () => {
 		const { context, reported, file } = harness();
 
 		roster.handshake(ALICE);
@@ -93,7 +93,7 @@ describe("reporting platform id list changes", () => {
 			{
 				name: BridgeEventName.AccessGranted,
 				text: {
-					ar: "تمت إضافة Meslzy لقائمة الأدمن",
+					ar: "تمت إضافة Meslzy إلى قائمة الأدمن",
 					en: "Added Meslzy to the admin list",
 				},
 				subject: "Meslzy",
@@ -106,7 +106,7 @@ describe("reporting platform id list changes", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("falls back to the account the row carries when the player is not on", async () => {
+	it("falls back to the account the row carries when the player is not on", async () => {
 		const { context, reported } = harness({
 			[PERMITTED_LIST]: `// List permitted players ID\n${ALICE}\n`,
 		});
@@ -128,7 +128,7 @@ describe("reporting platform id list changes", () => {
 		expect(JSON.stringify(reported)).not.toContain(PASSWORD);
 	});
 
-	test("reports a ban list addition as a ban without raising a second PlayerBanned event", async () => {
+	it("reports a ban list addition as a ban without raising a second PlayerBanned event", async () => {
 		const { context, reported, emitted } = harness();
 
 		await addTo(bans, context, ALICE);
@@ -144,7 +144,7 @@ describe("reporting platform id list changes", () => {
 		});
 	});
 
-	test("reports a ban list removal as an unban", async () => {
+	it("reports a ban list removal as an unban", async () => {
 		const { context, reported, file } = harness({
 			[BANNED_LIST]: `// List banned players ID\n${ALICE}\n`,
 		});
@@ -161,7 +161,7 @@ describe("reporting platform id list changes", () => {
 		expect(reported[0]?.text.en).toBe(`Unbanned ${ALICE}`);
 	});
 
-	test("reports nothing when the list refuses the change", async () => {
+	it("reports nothing when the list refuses the change", async () => {
 		const { context, reported } = harness({
 			[ADMIN_LIST]: `// List admin players ID\n${ALICE}\n`,
 		});
@@ -172,7 +172,7 @@ describe("reporting platform id list changes", () => {
 });
 
 describe("banning a player from the players table", () => {
-	test("keeps the PlayerBanned emit and reports the ban with the character name", async () => {
+	it("keeps the PlayerBanned emit and reports the ban with the character name", async () => {
 		const { context, reported, emitted } = harness();
 
 		roster.handshake(ALICE);

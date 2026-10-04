@@ -1,10 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { createMetricsSampler } from "./valheimMetrics";
 
 const START = 1_700_000_000_000;
 
 describe("sampling what a running valheim server knows about itself", () => {
-	test("answers with nothing before the server ever reached ready", () => {
+	it("answers with nothing before the server ever reached ready", () => {
 		expect(createMetricsSampler().snapshot(START)).toEqual({
 			lastSaveAt: null,
 			network: null,
@@ -15,7 +15,7 @@ describe("sampling what a running valheim server knows about itself", () => {
 		});
 	});
 
-	test("counts uptime from the ready mark rather than from the container", () => {
+	it("counts uptime from the ready mark rather than from the container", () => {
 		const sampler = createMetricsSampler();
 
 		sampler.markReady(START);
@@ -23,7 +23,7 @@ describe("sampling what a running valheim server knows about itself", () => {
 		expect(sampler.snapshot(START + 90_000).uptimeSeconds).toBe(90);
 	});
 
-	test("never reports a negative uptime when the clock moves backwards", () => {
+	it("never reports a negative uptime when the clock moves backwards", () => {
 		const sampler = createMetricsSampler();
 
 		sampler.markReady(START);
@@ -31,7 +31,7 @@ describe("sampling what a running valheim server knows about itself", () => {
 		expect(sampler.snapshot(START - 5000).uptimeSeconds).toBe(0);
 	});
 
-	test("keeps the newest save, the newest player count and the version banner", () => {
+	it("keeps the newest save, the newest player count and the version banner", () => {
 		const sampler = createMetricsSampler();
 
 		sampler.markReady(START);
@@ -50,7 +50,7 @@ describe("sampling what a running valheim server knows about itself", () => {
 		});
 	});
 
-	test("keeps a banner that printed no network version", () => {
+	it("keeps a banner that printed no network version", () => {
 		const sampler = createMetricsSampler();
 
 		sampler.recordVersion("0.217.14", null);
@@ -59,7 +59,7 @@ describe("sampling what a running valheim server knows about itself", () => {
 		expect(sampler.snapshot(START).version).toBe("0.217.14");
 	});
 
-	test("forgets everything on a restart, so a stopped server shows no stale numbers", () => {
+	it("forgets everything on a restart, so a stopped server shows no stale numbers", () => {
 		const sampler = createMetricsSampler();
 
 		sampler.markReady(START);

@@ -28,18 +28,18 @@ export const activeWorld = async (context: Bridge.Context) => {
 };
 
 const ACTIVE_WORLD_DELETE: Bridge.Text = {
-	ar: "ما تقدر تحذف العالم الشغّال. فعّل عالم ثاني أول.",
-	en: "You cannot delete the active world — activate another one first.",
+	ar: "لا يمكن حذف الماب الشغّالة. فعّل ماب أخرى أولًا.",
+	en: "You can't delete the active world. Activate another one first.",
 };
 
 const ACTIVE_WORLD_ACTIVATE: Bridge.Text = {
-	ar: "هذا العالم شغّال أصلًا.",
+	ar: "هذه الماب هي الشغّالة أصلًا.",
 	en: "This world is already the active one.",
 };
 
 const missingMeta = (name: string): Bridge.Text => {
 	return {
-		ar: `ملف .${WORLD_META_EXTENSION} حق "${name}" ناقص، وبدونه فالهايم يبني عالم جديد بنفس الاسم. ارفعه أول.`,
+		ar: `ملف .${WORLD_META_EXTENSION} الخاص بـ «${name}» ناقص، ومن دونه يُنشئ فالهايم ماب جديدة بالاسم نفسه. ارفعه أولًا.`,
 		en: `"${name}" has no .${WORLD_META_EXTENSION} file, and without it Valheim generates a fresh world under that name. Upload it first.`,
 	};
 };
@@ -62,7 +62,7 @@ const requireStopped = (context: Bridge.Context) => {
 	}
 
 	throw new BridgeUserError({
-		ar: "أوقف سيرفرك قبل ما ترفع عالم، وبعدين جرّب مرة ثانية.",
+		ar: "أوقف سيرفرك قبل رفع الماب، ثم جرب مرة ثانية.",
 		en: "Stop your server before uploading a world, then try again.",
 	});
 };
@@ -102,8 +102,8 @@ export const worlds: Bridge.Collection = {
 
 		if (source === null || !isUnder(source, WORLD_STAGING) || !(await context.files.exists(source))) {
 			throw new BridgeUserError({
-				ar: "ما لقينا الملف اللي رفعته.",
-				en: "The uploaded file was not found.",
+				ar: "تعذّر العثور على الملف الذي رفعته.",
+				en: "We couldn't find the file you uploaded.",
 			});
 		}
 
@@ -115,7 +115,7 @@ export const worlds: Bridge.Collection = {
 			await context.files.remove(source);
 
 			throw new BridgeUserError({
-				ar: "ارفع ملفات العالم نفسها: ملف .db وملف .fwl بنفس الاسم.",
+				ar: "ارفع ملفات الماب نفسها: ملف .db وملف .fwl بالاسم نفسه.",
 				en: "Upload the world files themselves: a .db and a .fwl with the same name.",
 			});
 		}
@@ -132,7 +132,7 @@ export const worlds: Bridge.Collection = {
 
 		if (await context.files.exists(target)) {
 			throw new BridgeUserError({
-				ar: "فيه ملف عالم بنفس الاسم. غيّر اسم ملفي .db و .fwl لنفس الاسم الجديد، وارفعهم مرة ثانية.",
+				ar: "يوجد ملف ماب بالاسم نفسه. غيّر اسم الملفين .db و .fwl إلى اسم جديد واحد، ثم ارفعهما مرة ثانية.",
 				en: "A world file already has this name. Give both the .db and .fwl files the same new name, then upload them again.",
 			});
 		}
@@ -149,7 +149,7 @@ export const worlds: Bridge.Collection = {
 		context.activity.report({
 			name: BridgeEventName.WorldImported,
 			text: {
-				ar: `تم رفع ملف العالم ${file}`,
+				ar: `تم رفع ملف الماب ${file}`,
 				en: `Uploaded the world file ${file}`,
 			},
 			subject: name,
@@ -184,7 +184,7 @@ export const worlds: Bridge.Collection = {
 			context.activity.report({
 				name: BridgeEventName.WorldActivated,
 				text: {
-					ar: `تم تفعيل عالم ${row.id} بدل ${previous}، والتغيير ينطبق مع التشغيل الجاي`,
+					ar: `تم تفعيل ماب ${row.id} بدلًا من ${previous}، ويُطبَّق التغيير في التشغيل القادم`,
 					en: `Activated world ${row.id} in place of ${previous}, takes effect on the next start`,
 				},
 				subject: row.id,
@@ -206,7 +206,7 @@ export const worlds: Bridge.Collection = {
 			context.activity.report({
 				name: BridgeEventName.WorldDeleted,
 				text: {
-					ar: `تم حذف عالم ${row.id}`,
+					ar: `تم حذف ماب ${row.id}`,
 					en: `Deleted world ${row.id}`,
 				},
 				subject: row.id,

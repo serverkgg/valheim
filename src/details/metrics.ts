@@ -44,7 +44,7 @@ const arabicHours = (hours: number) => {
 };
 
 const arabicMinutes = (minutes: number) => {
-	return arabicCount(minutes, "دقيقة", "دقيقتين", "دقايق", "دقيقة");
+	return arabicCount(minutes, "دقيقة", "دقيقتين", "دقائق", "دقيقة");
 };
 
 export const formatUptime = (seconds: number): Bridge.Text => {
@@ -91,14 +91,14 @@ export const crossplayBadge = (crossplay: boolean): Bridge.DetailBadge => {
 	return crossplay
 		? {
 				label: {
-					ar: "لعب مشترك مفتوح",
+					ar: "الكروس بلاي مفعّل",
 					en: "Crossplay on",
 				},
 				tone: BridgeDetailTone.Success,
 			}
 		: {
 				label: {
-					ar: "PC بس",
+					ar: "PC فقط",
 					en: "PC only",
 				},
 				tone: BridgeDetailTone.Neutral,
@@ -109,7 +109,7 @@ export const bepinexBadge = (bepinex: boolean): Bridge.DetailBadge => {
 	return bepinex
 		? {
 				label: {
-					ar: "BepInEx شغّال",
+					ar: "BepInEx مفعّل",
 					en: "BepInEx on",
 				},
 				tone: BridgeDetailTone.Success,
@@ -138,7 +138,7 @@ export const sessionBadge = (crossplay: boolean, live: boolean): Bridge.DetailBa
 			}
 		: {
 				label: {
-					ar: "ننتظر كود الدخول",
+					ar: "بانتظار كود الدخول",
 					en: "Waiting for the code",
 				},
 				tone: BridgeDetailTone.Warning,
@@ -186,7 +186,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Text,
 					key: "version",
 					label: {
-						ar: "نسخة فالهايم",
+						ar: "إصدار فالهايم",
 						en: "Valheim version",
 					},
 					value: formatVersion(snapshot.version, snapshot.network),
@@ -195,7 +195,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Text,
 					key: "build",
 					label: {
-						ar: "بِلد Steam",
+						ar: "بيلد Steam",
 						en: "Steam build",
 					},
 					value: stamp?.buildId ?? MISSING,
@@ -204,7 +204,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Text,
 					key: "players",
 					label: {
-						ar: "اللاعبين",
+						ar: "اللاعبون",
 						en: "Players",
 					},
 					value: `${players}/${MAX_PLAYERS}`,
@@ -213,7 +213,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Text,
 					key: "world",
 					label: {
-						ar: "العالم الشغّال",
+						ar: "الماب الشغّالة",
 						en: "Active world",
 					},
 					value: settings.world,
@@ -222,7 +222,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Text,
 					key: "worldSize",
 					label: {
-						ar: "حجم العالم",
+						ar: "حجم الماب",
 						en: "World size",
 					},
 					value: size === 0 ? MISSING : formatByteSize(size),
@@ -231,7 +231,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Number,
 					key: "mods",
 					label: {
-						ar: "المودات المركّبة",
+						ar: "المودات المثبّتة",
 						en: "Installed mods",
 					},
 					value: mods,
@@ -240,7 +240,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Text,
 					key: "uptime",
 					label: {
-						ar: "شغّال من",
+						ar: "مدة التشغيل",
 						en: "Up for",
 					},
 					value: snapshot.uptimeSeconds === null ? MISSING : formatUptime(snapshot.uptimeSeconds),
@@ -269,7 +269,7 @@ export const metrics: Bridge.Detail = {
 					: []),
 			],
 			subtitle: {
-				ar: "الأرقام هذي طالعة من سيرفرك نفسه، مو تقدير.",
+				ar: "هذه الأرقام صادرة من سيرفرك مباشرة، وليست تقديرًا.",
 				en: "These numbers come straight from your own server, not an estimate.",
 			},
 			title: {
