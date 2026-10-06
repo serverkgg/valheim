@@ -450,7 +450,7 @@ const settingsTab: Bridge.Tab = {
 			},
 			target: BridgeFormTarget.Variables,
 			reinstall: true,
-			confirm: BridgeConfirm.Strong,
+			confirm: BridgeConfirm.Normal,
 			confirmText: {
 				ar: "سنوقف سيرفرك، وننزّل بيلد آخر من فالهايم من Steam، ثم نشغّله من جديد. يبقى مابك وإعداداتك كما هي، لكن يلزم أن يشغّل اللاعبون البيلد نفسه ليدخلوا.",
 				en: "We stop your server, pull a different Valheim build from Steam, and start it again. Your world and settings stay, but players must run the same build to join.",
@@ -701,7 +701,7 @@ const playersTab: Bridge.Tab = {
 						en: "Ban",
 					},
 					offline: true,
-					confirm: BridgeConfirm.Strong,
+					confirm: BridgeConfirm.Normal,
 					confirmText: {
 						ar: "سنضيف معرّفه إلى قائمة المحظورين. لا يوجد في فالهايم أمر طرد، فيمنعه الحظر عند محاولته التالية للدخول. وإذا كان متصلًا الآن، فنفّذ ريستارت لسيرفرك ليخرج.",
 						en: "We add their platform ID to the ban list. Valheim has no kick command, so the ban stops them the next time they try to join. Restart your server to drop them if they're on right now.",
@@ -941,7 +941,7 @@ const modsTab: Bridge.Tab = {
 						ar: "أزل BepInEx وكل المودات",
 						en: "Remove BepInEx and every mod",
 					},
-					confirm: BridgeConfirm.Strong,
+					confirm: BridgeConfirm.Normal,
 					confirmText: {
 						ar: "سيتم حذف BepInEx وكل المودات وإعداداتها. تبقى مابك كما هي، لكن كل ما أضافه مود إليها سيختفي.",
 						en: "BepInEx, every mod and their configs are deleted. Your world is untouched, but anything a mod added to it disappears.",
