@@ -134,15 +134,6 @@ presence:
 
 files:
   protected:
-    - .steamcmd
-    - .steam
-    - Steam
-    - steamapps
-    - valheim_server.x86_64
-    - valheim_server_Data
-    - linux64
-    - UnityPlayer.so
-    - steamclient.so
     - .serverk-install.json
     - .serverk-mods.json
     - .serverk-bepinex.json

@@ -323,13 +323,13 @@ describe("the manifest and the driver agreeing on the ports", () => {
 });
 
 describe("the manifest guarding the files the driver depends on", () => {
-	it("protects the steam install the driver would otherwise redownload", () => {
+	it("leaves the steam install to the customer, since steamcmd validates it on the next install", () => {
 		for (const path of [
 			".steamcmd",
 			"steamapps",
 			SERVER_BINARY,
 		]) {
-			expect(manifest.files.protected).toContain(path);
+			expect(manifest.files.protected).not.toContain(path);
 		}
 	});
 
