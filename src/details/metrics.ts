@@ -213,7 +213,7 @@ export const metrics: Bridge.Detail = {
 					format: BridgeDetailFormat.Text,
 					key: "world",
 					label: {
-						ar: "الماب الشغّالة",
+						ar: "الماب الشغّال",
 						en: "Active world",
 					},
 					value: settings.world,

@@ -178,11 +178,11 @@ const settingsTab: Bridge.Tab = {
 					key: WORLD_FIELD,
 					control: BridgeControl.Text,
 					label: {
-						ar: "الماب الشغّالة",
+						ar: "الماب الشغّال",
 						en: "Active world",
 					},
 					help: {
-						ar: "اسم ملف الحفظ الذي يشتغل عليه سيرفرك. الاسم الذي ليس له ملف يُنشئ ماب جديدة. تبويب المابات أسهل من كتابة الاسم هنا.",
+						ar: "اسم ملف الحفظ الذي يشتغل عليه سيرفرك. الاسم الذي ليس له ملف يُنشئ مابًا جديدًا. تبويب المابات أسهل من كتابة الاسم هنا.",
 						en: "The save file your server runs. A name with no file behind it generates a new world. The worlds tab is easier than typing it here.",
 					},
 					pattern: WORLD_PATTERN,
@@ -515,7 +515,7 @@ const worldsTab: Bridge.Tab = {
 				{
 					key: "active",
 					label: {
-						ar: "الشغّالة",
+						ar: "الشغّال",
 						en: "Active",
 					},
 				},
@@ -545,7 +545,7 @@ const worldsTab: Bridge.Tab = {
 					},
 					confirm: BridgeConfirm.Normal,
 					confirmText: {
-						ar: "سيشتغل سيرفرك على هذه الماب. يُطبَّق التغيير بعد الريستارت.",
+						ar: "سيشتغل سيرفرك على هذا الماب. يُطبَّق التغيير بعد الريستارت.",
 						en: "Your server switches to this world. It applies after a restart.",
 					},
 				},
@@ -557,7 +557,7 @@ const worldsTab: Bridge.Tab = {
 					},
 					confirm: BridgeConfirm.Strong,
 					confirmText: {
-						ar: "حذف الماب يحذف ملفيها .db و .fwl نهائيًا. النسخة الاحتياطية هي الطريقة الوحيدة لاسترجاعها، فخذ نسخة قبل الحذف.",
+						ar: "حذف الماب يحذف ملفيه .db و .fwl نهائيًا. النسخة الاحتياطية هي الطريقة الوحيدة لاسترجاعه، فخذ نسخة قبل الحذف.",
 						en: "Deleting a world removes its .db and .fwl forever. A backup is your only way back, so take one first.",
 					},
 				},
@@ -571,11 +571,11 @@ const worldsTab: Bridge.Tab = {
 			layout: BridgeLayout.Actions,
 			id: "new-world",
 			title: {
-				ar: "ماب جديدة",
+				ar: "ماب جديد",
 				en: "A new world",
 			},
 			help: {
-				ar: "سمِّ ماب جديدة، وسيُنشئها فالهايم من الصفر بعد ريستارت سيرفرك. تبقى مابك الحالية محفوظة، وارجع إليها متى أردت.",
+				ar: "سمِّ مابًا جديدًا، وسيُنشئه فالهايم من الصفر بعد ريستارت سيرفرك. يبقى مابك الحالي محفوظًا، وارجع إليه متى أردت.",
 				en: "Name a new world and Valheim generates it from scratch on the next restart. Your current world stays where it is and you can switch back any time.",
 			},
 			module: "worldActions",
@@ -583,12 +583,12 @@ const worldsTab: Bridge.Tab = {
 				{
 					id: "create",
 					label: {
-						ar: "أنشئ ماب جديدة",
+						ar: "أنشئ ماب جديد",
 						en: "Create a world",
 					},
 					confirm: BridgeConfirm.Normal,
 					confirmText: {
-						ar: "سينتقل سيرفرك إلى الماب الجديدة بعد الريستارت، وتبقى القديمة محفوظة في جدول المابات.",
+						ar: "سينتقل سيرفرك إلى الماب الجديد بعد الريستارت، ويبقى القديم محفوظًا في جدول المابات.",
 						en: "Your server moves to the new world after a restart. The old one stays in the worlds table.",
 					},
 					fields: [
@@ -943,7 +943,7 @@ const modsTab: Bridge.Tab = {
 					},
 					confirm: BridgeConfirm.Normal,
 					confirmText: {
-						ar: "سيتم حذف BepInEx وكل المودات وإعداداتها. تبقى مابك كما هي، لكن كل ما أضافه مود إليها سيختفي.",
+						ar: "سيتم حذف BepInEx وكل المودات وإعداداتها. يبقى مابك كما هو، لكن كل ما أضافه مود إليه سيختفي.",
 						en: "BepInEx, every mod and their configs are deleted. Your world is untouched, but anything a mod added to it disappears.",
 					},
 				},

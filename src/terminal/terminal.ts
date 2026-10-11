@@ -39,7 +39,7 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "worlds",
 		summary: {
-			ar: "ماباتك المحفوظة على القرص، والشغّالة منها معلّمة بنجمة.",
+			ar: "ماباتك المحفوظة على القرص، والشغّال منها معلّم بنجمة.",
 			en: "The worlds on disk, with the active one marked.",
 		},
 	},

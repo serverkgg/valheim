@@ -8,7 +8,7 @@ metadata:
     ar: فالهايم
     en: Valheim
   description:
-    ar: سيرفر فالهايم في ماب فايكنق مفتوحة، تبدأ فيها بفأس خشبي وتنتهي بقاعدة على البحر. احتطب، وابنِ، واصطد، وواجهوا البوسات معًا. الماب والمودات وقواعد اللعب كلها تحت تحكمك من اللوحة، والكروس بلاي يتيح لأصحابك على Xbox و PS5 و Switch 2 الدخول معك بكود.
+    ar: سيرفر فالهايم في ماب فايكنق مفتوح، تبدأ فيه بفأس خشبي وتنتهي بقاعدة على البحر. احتطب، وابنِ، واصطد، وواجهوا البوسات معًا. الماب والمودات وقواعد اللعب كلها تحت تحكمك من اللوحة، والكروس بلاي يتيح لأصحابك على Xbox و PS5 و Switch 2 الدخول معك بكود.
     en: Valheim dedicated servers in an open Viking world you enter with a wooden axe and leave with a hall on the coast. Chop, build, hunt, and take the bosses down together. The world, the mods and the rules are yours to control from the panel, and crossplay lets friends on Xbox, PS5 and Switch 2 join with a code.
   tagline:
     ar: ابنِ قاعدتك واهزم البوسات مع أصحابك على PC و Xbox و PS5 و Switch 2، ومابك بإدارتك
@@ -20,6 +20,10 @@ metadata:
     - kind: mods
       sources:
         - thunderstore
+
+steam:
+  appId: 896660
+  branchVariable: VALHEIM_BRANCH
 
 resources:
   minMemoryMb: 4096
@@ -155,7 +159,7 @@ files:
       icon: map
       color: "#5ba32b"
       note:
-        ar: كل ماب من ملفين، ‎.db فيه كل ما بُني، و ‎.fwl فيه سيد الماب وقواعدها. لا تحذف أحدهما وتترك الآخر، وخذ نسخة احتياطية قبل أي تعديل هنا.
+        ar: كل ماب من ملفين، ‎.db فيه كل ما بُني، و ‎.fwl فيه سيد الماب وقواعده. لا تحذف أحدهما وتترك الآخر، وخذ نسخة احتياطية قبل أي تعديل هنا.
         en: Each world is two files. The .db holds everything built, the .fwl holds the seed and the world rules. Never delete one and keep the other, and take a backup before you touch anything here.
     - match: save/adminlist.txt
       label:
@@ -230,10 +234,10 @@ guides:
       en: guides/getting-started/en.md
   - id: worlds
     title:
-      ar: رفع المابات وتبديلها وإنشاء ماب جديدة
+      ar: رفع المابات وتبديلها وإنشاء ماب جديد
       en: Upload, switch and start fresh worlds
     summary:
-      ar: ارفع مابك من جهازك، وبدّل بين ماباتك، أو أنشئ ماب جديدة دون أن تخسر القديمة.
+      ar: ارفع مابك من جهازك، وبدّل بين ماباتك، أو أنشئ مابًا جديدًا دون أن تخسر القديم.
       en: Upload the world from your own game, switch between worlds, or start a fresh one without losing the old.
     tags:
       - worlds

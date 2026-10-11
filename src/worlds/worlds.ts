@@ -28,18 +28,18 @@ export const activeWorld = async (context: Bridge.Context) => {
 };
 
 const ACTIVE_WORLD_DELETE: Bridge.Text = {
-	ar: "لا يمكن حذف الماب الشغّالة. فعّل ماب أخرى أولًا.",
+	ar: "لا يمكن حذف الماب الشغّال. فعّل مابًا آخر أولًا.",
 	en: "You can't delete the active world. Activate another one first.",
 };
 
 const ACTIVE_WORLD_ACTIVATE: Bridge.Text = {
-	ar: "هذه الماب هي الشغّالة أصلًا.",
+	ar: "هذا الماب هو الشغّال أصلًا.",
 	en: "This world is already the active one.",
 };
 
 const missingMeta = (name: string): Bridge.Text => {
 	return {
-		ar: `ملف .${WORLD_META_EXTENSION} الخاص بـ «${name}» ناقص، ومن دونه يُنشئ فالهايم ماب جديدة بالاسم نفسه. ارفعه أولًا.`,
+		ar: `ملف .${WORLD_META_EXTENSION} الخاص بـ «${name}» ناقص، ومن دونه يُنشئ فالهايم مابًا جديدًا بالاسم نفسه. ارفعه أولًا.`,
 		en: `"${name}" has no .${WORLD_META_EXTENSION} file, and without it Valheim generates a fresh world under that name. Upload it first.`,
 	};
 };
