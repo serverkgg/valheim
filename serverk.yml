@@ -138,6 +138,7 @@ presence:
 
 files:
   protected:
+    - .serverk-staging/**
     - .serverk-install.json
     - .serverk-mods.json
     - .serverk-bepinex.json

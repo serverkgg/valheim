@@ -27,7 +27,7 @@ export const SETTINGS_FILE = ".serverk-settings.json";
 
 export const STAGING_ROOT = ".serverk-staging";
 
-export const WORLD_STAGING = `${STAGING_ROOT}/world-upload`;
+export const WORLD_STAGING = ".serverk-uploads/world";
 
 export const MAX_PLAYERS = 10;
 
