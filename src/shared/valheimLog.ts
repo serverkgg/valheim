@@ -22,6 +22,9 @@ export const VERSION_LINE = /Valheim version:\s*(?<version>[^\s,]+)(?:[^\n]*?net
 
 export const WORLD_SAVED_LINE = /World saved\s*\(\s*(?<durationMs>[\d.,]+)\s*ms\s*\)/;
 
+export const PUBLIC_IP_LOOP_LINE =
+	/Exception while waiting for respons(?:e)? from \S+ -> System\.InvalidOperationException: This instance has already started one or more requests/;
+
 export const DEAD_ZDO_ID = "0:0";
 
 export interface PeerLine {

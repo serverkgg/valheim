@@ -73,3 +73,9 @@ Anything that needs live admin commands is done from inside Valheim on F5, once 
 @[open](backups)
 
 > [!warning] Valheim patches often. Your server pulls the newest Steam build every time it starts, so a restart is all it takes to catch up. Just make sure your players updated their game too.
+
+## When the console fills with IP errors {#public-ip-loop}
+
+Valheim sometimes gets stuck fetching your server's public IP. The console then repeats the same lines without stopping, among them one with `InvalidOperationException` and one that reads `Could not extract valid IP address from externalIP download string`.
+
+This is a bug in Valheim itself, not in your settings. The lines don't stop on their own, even while the server keeps running, so restart your server to clear them. Turning off **List in the server browser** doesn't prevent it, because Valheim fetches the address either way.

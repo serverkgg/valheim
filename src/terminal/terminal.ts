@@ -1,4 +1,5 @@
 import { type Bridge, BridgeKind, BridgeTerminalLevel } from "@serverkgg/bridge";
+import { PUBLIC_IP_LOOP_LINE } from "../shared";
 import { consoleHandler } from "./consoleHandler";
 
 const player: Bridge.TerminalArg = {
@@ -90,6 +91,10 @@ const commands: Bridge.TerminalCommand[] = [
 ];
 
 const rules: Bridge.TerminalRule[] = [
+	{
+		match: PUBLIC_IP_LOOP_LINE,
+		level: BridgeTerminalLevel.Error,
+	},
 	{
 		match: /Unhandled Exception:|Fatal error in GC|DllNotFoundException|Segmentation fault/,
 		level: BridgeTerminalLevel.Error,
