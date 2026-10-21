@@ -1,53 +1,53 @@
+![Valheim](assets/banner.webp)
+
 # فالهايم (Valheim)
 
-حزمة فالهايم على منصة سيرفرك (`serverk.gg`). هذا المستودع فيه كل شيء اللعبة تحتاجه عشان تشتغل على المنصة: ملف التعريف `serverk.yml`، الـ driver اللي يدير السيرفر، صورة الدوكر، والشروحات.
+يضم هذا الريبو كل ما تحتاجه منصة سيرفرك لتشغيل سيرفرات فالهايم. سيرفر فالهايم في ماب فايكنق مفتوح، تبدأ فيه بفأس خشبي وتنتهي بقاعدة على البحر. احتطب، وابنِ، واصطد، وواجهوا البوسات معًا. الماب والمودات وقواعد اللعب كلها تحت تحكمك من اللوحة، والكروس بلاي يتيح لأصحابك على Xbox و PS5 و Switch 2 الدخول معك بكود. ابنِ قاعدتك واهزم البوسات مع أصحابك على PC و Xbox و PS5 و Switch 2، ومابك بإدارتك. صفحة اللعبة: [serverk.gg/games/valheim](https://serverk.gg/games/valheim)
 
-The Valheim game package for the Serverk platform (`serverk.gg`). This repo holds everything the game needs to run on the platform: the `serverk.yml` manifest, the driver that manages the server, the Docker image, and the guides.
+This repository holds everything Serverk needs to run Valheim servers. Valheim dedicated servers in an open Viking world you enter with a wooden axe and leave with a hall on the coast. Chop, build, hunt, and take the bosses down together. The world, the mods and the rules are yours to control from the panel, and crossplay lets friends on Xbox, PS5 and Switch 2 join with a code. Build your hall and take down the bosses with friends on PC, Xbox, PS5 and Switch 2, in your world, by your rules. Game page: [serverk.gg/games/valheim](https://serverk.gg/games/valheim)
 
 ## Layout
 
-- `serverk.yml` — the game manifest: metadata, resources, ports, backup rules, guides.
-- `src/` — the bridge driver: install (SteamCMD app 896660), lifecycle, query, the settings the start command is built from, worlds, the Steam ID lists, and the BepInEx mod catalog.
-- `image/Dockerfile` — the runtime image; the compiled bridge binary is its entrypoint.
-- `assets/` — logo and banner (webp).
-- `guides/` — player guides in Arabic and English.
+- `serverk.yml`: the game manifest with its metadata, resources, ports, backup and reset rules, and the guide list.
+- `serverk.schema.json`: the JSON Schema of `serverk.yml` for the editor, written by `serverk-bridge schema`.
+- `src/`: the driver, built on `@serverkgg/bridge`; `src/driver.ts` exports it and `src/main.ts` serves it.
+- `image/Dockerfile`: the container image, with the compiled bridge as its entrypoint.
+- `assets/`: the logo and the banner the site and the panel show.
+- `guides/<id>/ar.md` and `en.md`: the guide bodies; each guide's title, summary and tags live in `serverk.yml`.
 
-## What Valheim does not give a server
+## Guides
 
-The dedicated server has no console and no RCON, so the package deliberately ships none of the features that would need one:
-
-- No `announce` module — nothing can put a message in front of players.
-- No terminal commands — the console tab shows the log and takes no input.
-- No kick — a ban is written to `bannedlist.txt` and applies on the next join attempt.
-- No manual save — `-saveinterval` and shutdown are the only save points.
-
-Every setting reaches the server as a start parameter, so the driver owns `.serverk-settings.json` and builds the argv from it. Every settings change needs a restart.
+- [البدء بسيرفرك · Getting started](https://serverk.gg/games/valheim/guides/getting-started)
+- [رفع المابات وتبديلها وإنشاء ماب جديد · Upload, switch and start fresh worlds](https://serverk.gg/games/valheim/guides/worlds)
+- [المودات و BepInEx · Mods and BepInEx](https://serverk.gg/games/valheim/guides/mods)
 
 ## Develop
 
-Everything runs on [Bun](https://bun.sh):
+Everything runs on [Bun](https://bun.sh).
 
-```sh
-bun install
-bun run check
-bun run tsc
-bun run test
-bun run validate
-bun run compile
-```
+- `bun install`: installs the dependencies, points Git at the hooks in `.githooks/` and writes `.claude/rules/package.md` from the bridge.
+- `bun run check`: checks lint and formatting with Biome; `bun run fix` applies the fixes.
+- `bun run tsc`: type-checks the code.
+- `bun run test`: runs the tests.
+- `bun run validate`: runs the checks the platform runs at publish, and fails while this README is out of date.
+- `bun run compile`: builds `dist/bridge`, the linux/amd64 binary the image starts.
 
-`validate` checks the manifest, assets, and driver wiring with the exact validation the platform runs at publish. `compile` produces `dist/bridge`, an amd64 binary — serverk publishes game images for `linux/amd64` only.
+`.githooks/pre-commit` runs `bun run fix`, `bun run tsc`, `bun run test`, `bun run validate` and `bunx serverk-bridge schema --check` before every commit. There is no CI: a commit that passes the hook is ready.
 
-The `.githooks/pre-commit` hook is the gate: it runs `fix`, `tsc`, `test`, `validate`, and `serverk-bridge schema --check` on every commit. `bun install` wires it up through the `prepare` script.
-
-The driver is built on [`@serverkgg/bridge`](https://www.npmjs.com/package/@serverkgg/bridge). `postinstall` runs `serverk-bridge link`, which points `node_modules/@serverkgg/bridge` at a local checkout when one sits beside this repo — never commit a `file:` dependency.
+`bun install` runs `serverk-bridge link`, which links `@serverkgg/bridge` to a sibling `serverk` checkout at `../serverk/modules/bridge` when one exists. Never commit a `file:` or `link:` dependency.
 
 ## Contribute
 
-- افتح issue لأي مشكلة أو اقتراح — بالعربي أو بالإنجليزي، كلها مرحّب فيها.
-- Run `bun run check`, `bun run tsc`, `bun run test` and `bun run validate` before you open a pull request — the same checks the pre-commit hook runs.
-- Releases are done by the Serverk team through the platform's central release pipeline; merged changes ride the next release.
+افتح issue لأي مشكلة أو اقتراح، بالعربية أو بالإنجليزية. ينشر فريق سيرفرك هذا الريبو من ريبو `serverk` بالأمر `bunx outdo package --prod --name valheim`، ويصل كل تغيير مدموج مع النشر التالي. العربية هي لغة المصدر: يُكتب كل نص يقرؤه العميل بالعربية أولًا، بلغة رسمية مع لمسة خليجية خفيفة، ثم بالإنجليزية. أبقِ أسماء الملفات والأوامر والمفاتيح بالحروف اللاتينية.
 
-## Arabic copy
+Open an issue for any problem or suggestion, in Arabic or English. Serverk releases this repository from `serverk` with `bunx outdo package --prod --name valheim`; merged changes ride the next release. Arabic is the source language: every string a customer reads is written in Arabic first, formal with a light Gulf touch, then in English. Keep file names, commands and config keys in Latin script.
 
-Arabic is the source language of the platform. Player-facing strings in `serverk.yml` and the guides use Gulf gaming Arabic — the game's Arabic name is always «فالهايم», written solid.
+## License
+
+الكود متاح للقراءة، وجميع الحقوق محفوظة لمنصة سيرفرك، ولا يُمنح أي ترخيص.
+
+The code is public to read. All rights are reserved by Serverk, and no license is granted.
+
+يُنشأ هذا الملف بالأمر `serverk-bridge readme` من `serverk.yml`، فعدّل ملف التعريف لا هذا الملف.
+
+Generated by `serverk-bridge readme` from `serverk.yml`; edit the manifest, not this file.
