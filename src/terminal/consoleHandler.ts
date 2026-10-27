@@ -1,6 +1,7 @@
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
 import { readStamp } from "@serverkgg/bridge/install";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
+import { formatByteSize } from "@serverkgg/bridge/utils";
 import { addPlatformId, BANNED_OPTIONS, platformIdActivity, playerNameOf, removePlatformId } from "../collections";
 import type { ValheimStamp } from "../install";
 import { packInstalled, readPackStamp, readSidecar } from "../mods";
@@ -10,7 +11,6 @@ import {
 	CROSSPLAY_FIELD,
 	discoverWorlds,
 	displayNameOf,
-	formatByteSize,
 	MAX_PLAYERS,
 	metrics,
 	missingHalf,

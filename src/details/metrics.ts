@@ -1,12 +1,12 @@
 import { type Bridge, BridgeDetailFormat, BridgeDetailTone, BridgeKind } from "@serverkgg/bridge";
 import { readStamp } from "@serverkgg/bridge/install";
+import { formatByteSize, formatUptime } from "@serverkgg/bridge/utils";
 import type { ValheimStamp } from "../install";
 import { packInstalled, readSidecar } from "../mods";
 import {
 	BEPINEX_FIELD,
 	booleanOf,
 	CROSSPLAY_FIELD,
-	formatByteSize,
 	MAX_PLAYERS,
 	readSettings,
 	roster,
@@ -22,62 +22,6 @@ const DETAIL_ID = "metrics";
 const REFRESH_SECONDS = 15;
 
 const MISSING = "—";
-
-const MINUTE_SECONDS = 60;
-
-const HOUR_SECONDS = 3600;
-
-const arabicCount = (count: number, one: string, two: string, few: string, many: string) => {
-	if (count === 1) {
-		return one;
-	}
-
-	if (count === 2) {
-		return two;
-	}
-
-	return `${count} ${count <= 10 ? few : many}`;
-};
-
-const arabicHours = (hours: number) => {
-	return arabicCount(hours, "ساعة", "ساعتين", "ساعات", "ساعة");
-};
-
-const arabicMinutes = (minutes: number) => {
-	return arabicCount(minutes, "دقيقة", "دقيقتين", "دقائق", "دقيقة");
-};
-
-export const formatUptime = (seconds: number): Bridge.Text => {
-	const total = Math.max(0, Math.floor(seconds));
-	const hours = Math.floor(total / HOUR_SECONDS);
-	const minutes = Math.floor((total % HOUR_SECONDS) / MINUTE_SECONDS);
-
-	if (hours === 0 && minutes === 0) {
-		return {
-			ar: "أقل من دقيقة",
-			en: "Less than a minute",
-		};
-	}
-
-	if (hours === 0) {
-		return {
-			ar: arabicMinutes(minutes),
-			en: `${minutes}m`,
-		};
-	}
-
-	if (minutes === 0) {
-		return {
-			ar: arabicHours(hours),
-			en: `${hours}h`,
-		};
-	}
-
-	return {
-		ar: `${arabicHours(hours)} و${arabicMinutes(minutes)}`,
-		en: `${hours}h ${minutes}m`,
-	};
-};
 
 export const formatVersion = (version: string | null, network: string | null) => {
 	if (version === null) {
